@@ -4,6 +4,9 @@ const chalk = require('chalk');
 const {
   createEnvFile,
   updateEnvFile,
+  getFilesRecursively,
+  createSymlink,
+  baseFolder
 } = require('./lib/file-operations');
 
 program
@@ -58,6 +61,23 @@ program
 
     await updateEnvFile(oldValue, newValue)
 
+  });
+
+  program
+  .command('exec')
+  .description('Copy env file to current folder symlink')
+  .alias('e')
+  .action(async () => {
+    const files = await getFilesRecursively(baseFolder);
+
+    const { selectedFile } = await inquirer.prompt({
+    type: 'list',
+    name: 'selectedFile',
+    message: 'Select an .env file to copy:',
+    choices: files,
+  });
+
+  await createSymlink(selectedFile);
   });
 
 
