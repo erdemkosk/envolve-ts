@@ -4,12 +4,14 @@ const chalk = require('chalk');
 
 const {
   getBaseFolder,
-  getFilesRecursively
+  getFilesRecursively,
+  readFile
 } = require('./lib/file-operations');
 
 const {
   createEnvFile,
   updateEnvFile,
+  updateAllEnvFile,
   createSymlink,
   getValuesInEnv
 } = require('./lib/env-operations');
@@ -20,7 +22,7 @@ program
 
 program
   .command('create')
-  .description('Create a new env file')
+  .description('CREATE a new env file')
   .alias('c')
   .action(async () => {
     const answers = await inquirer.prompt([
@@ -40,16 +42,15 @@ program
 
     try {
       await createEnvFile({ serviceName, content });
-      console.log(`File .env created in the "${chalk.blue(serviceName)}" directory.`);
     } catch (error) {
       console.error('An error occurred:', error);
     }
   });
 
 program
-  .command('update')
-  .description('Change value on envs')
-  .alias('u')
+  .command('update-all')
+  .description('UPDATE single value on each related service env')
+  .alias('ua')
   .action(async () => {
     const { oldValue, newValue } = await inquirer.prompt([
       {
@@ -64,13 +65,13 @@ program
       },
     ]);
 
-    await updateEnvFile({ oldValue, newValue })
+    await updateAllEnvFile({ oldValue, newValue })
 
   });
 
 program
   .command('exec')
-  .description('Copy env file to current folder symlink')
+  .description('COPY env file to current folder symlink')
   .alias('e')
   .action(async () => {
     const files = await getFilesRecursively({ directory: getBaseFolder() });
@@ -100,6 +101,38 @@ program
     });
 
     await getValuesInEnv({ targetPath });
+  });
+
+  program
+  .command('update')
+  .description('UPDATE a single env file')
+  .alias('u')
+  .action(async () => {
+    const files = await getFilesRecursively({ directory: getBaseFolder() });
+
+    const { targetPath } = await inquirer.prompt({
+      type: 'list',
+      name: 'targetPath',
+      message: 'Select an .env file to show:',
+      choices: files,
+    });
+
+    const existingContent =  await readFile({file: targetPath});
+
+    const { content } = await inquirer.prompt([
+      {
+        type: 'editor',
+        name: 'content',
+        message: chalk.green('Edit the env content:'),
+        default: existingContent,
+      },
+    ]);
+  
+    try {
+      await updateEnvFile({ file : targetPath, content });
+    } catch (error) {
+      console.error('An error occurred:', error);
+    }
   });
 
 
