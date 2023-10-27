@@ -11,3 +11,26 @@ Envolve is a command-line tool designed to simplify the management of `.env` fil
 - **Bulk Updates**: Make bulk updates to environment variable values across all your projects. Envolve provides an efficient way to change values universally.
 
 - **Symbolic Linking**: Use symbolic links to easily copy `.env` files from your collection to your current project, ensuring that you have the right configuration at your fingertips.
+
+## Contributors
+
+A big thank you to all the contributors who have helped make Envolve better:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/erdemkosk">
+        <img src="https://github.com/erdemkosk.png" width="100px;" alt="erdemkosk"/>
+        <br />
+        <sub><b>Erdem Köşk</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/suleymantaspinar">
+        <img src="https://github.com/suleymantaspinar.png" width="100px;" alt="suleymantaspinar"/>
+        <br />
+        <sub><b>Süleyman Taşpınar</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
