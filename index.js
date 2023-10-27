@@ -1,13 +1,18 @@
 const program = require('commander');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
+
+const {
+  getBaseFolder,
+  getFilesRecursively
+} = require('./lib/file-operations');
+
 const {
   createEnvFile,
   updateEnvFile,
-  getFilesRecursively,
   createSymlink,
-  baseFolder
-} = require('./lib/file-operations');
+  getValuesInEnv
+} = require('./lib/env-operations');
 
 program
   .version('1.0.0')
@@ -34,7 +39,7 @@ program
     const { servicename, content } = answers;
 
     try {
-      await createEnvFile(servicename, content);
+      await createEnvFile({ serviceName, content });
       console.log(`File .env created in the "${chalk.blue(servicename)}" directory.`);
     } catch (error) {
       console.error('An error occurred:', error);
@@ -59,25 +64,42 @@ program
       },
     ]);
 
-    await updateEnvFile(oldValue, newValue)
+    await updateEnvFile({ oldValue, newValue })
 
   });
 
-  program
+program
   .command('exec')
   .description('Copy env file to current folder symlink')
   .alias('e')
   .action(async () => {
-    const files = await getFilesRecursively(baseFolder);
+    const files = await getFilesRecursively({ directory: getBaseFolder() });
 
-    const { selectedFile } = await inquirer.prompt({
-    type: 'list',
-    name: 'selectedFile',
-    message: 'Select an .env file to copy:',
-    choices: files,
+    const { targetPath } = await inquirer.prompt({
+      type: 'list',
+      name: 'targetPath',
+      message: 'Select an .env file to copy:',
+      choices: files,
+    });
+
+    await createSymlink({ targetPath });
   });
 
-  await createSymlink(selectedFile);
+program
+  .command('get')
+  .description('GET env file to related service name')
+  .alias('g')
+  .action(async () => {
+    const files = await getFilesRecursively({ directory: getBaseFolder() });
+
+    const { targetPath } = await inquirer.prompt({
+      type: 'list',
+      name: 'targetPath',
+      message: 'Select an .env file to show:',
+      choices: files,
+    });
+
+    await getValuesInEnv({ targetPath });
   });
 
 
