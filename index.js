@@ -26,7 +26,7 @@ program
     const answers = await inquirer.prompt([
       {
         type: 'input',
-        name: 'servicename',
+        name: 'serviceName',
         message: chalk.green('Enter the service name: '),
       },
       {
@@ -36,11 +36,11 @@ program
       },
     ]);
 
-    const { servicename, content } = answers;
+    const { serviceName, content } = answers;
 
     try {
       await createEnvFile({ serviceName, content });
-      console.log(`File .env created in the "${chalk.blue(servicename)}" directory.`);
+      console.log(`File .env created in the "${chalk.blue(serviceName)}" directory.`);
     } catch (error) {
       console.error('An error occurred:', error);
     }
