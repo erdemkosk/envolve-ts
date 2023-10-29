@@ -16,6 +16,7 @@ const {
   updateAllEnvFile,
   createSymlink,
   getValuesInEnv,
+  compareEnvFiles,
 } = require('./lib/env-operations');
 
 program
@@ -77,9 +78,9 @@ program
   });
 
 program
-  .command('exec')
+  .command('copy')
   .description('COPY env file to current folder symlink')
-  .alias('e')
+  .alias('cp')
   .action(async () => {
     const files = await getFilesRecursively({ directory: getBaseFolder() });
 
@@ -96,9 +97,9 @@ program
   });
 
 program
-  .command('get')
-  .description('GET env file to related service name')
-  .alias('g')
+  .command('show')
+  .description('SHOW env file to related service name')
+  .alias('sh')
   .action(async () => {
     const files = await getFilesRecursively({ directory: getBaseFolder() });
 
@@ -144,6 +145,40 @@ program
     } catch (error) {
       console.error('An error occurred:', error);
     }
+  });
+
+program
+  .command('compare')
+  .description('COMPARE differences in two different files with the same variable')
+  .alias('comp')
+  .action(async () => {
+    const files = await getFilesRecursively({ directory: getBaseFolder() });
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'source',
+        message: 'Source',
+        choices: files,
+      },
+      {
+        type: 'list',
+        name: 'destination',
+        message: 'Destination',
+        // eslint-disable-next-line no-shadow
+        choices: (answers) => {
+          // Kullanıcının 'source' seçimine bağlı olarak 'destination' seçeneklerini filtrele
+          const sourceValue = answers.source;
+          return files.filter((file) => file !== sourceValue);
+        },
+      },
+    ]);
+
+    const { source, destination } = answers;
+
+    const differentVariables = await compareEnvFiles({ source, destination });
+
+    console.log(differentVariables.length > 1 ? table(differentVariables) : chalk.red('There is no diff or two different files do not contain the same variable name'));
   });
 
 program.parse(process.argv);
