@@ -4,13 +4,29 @@
 
 Envolve is a command-line tool designed to simplify the management of `.env` files in your projects. It helps you collect, organize, and modify your environment variables across multiple projects, ensuring that you can easily handle your configuration data without the risk of losing it when you delete or archive your projects.
 
-## Features
+## Motivation
 
-- **Create and Edit**: Create new `.env` files or edit existing ones seamlessly. With the built-in text editor, you can quickly update your environment variables.
+In today's software development world, projects can accumulate numerous .env files. As you create and work on different projects, managing these files can become a challenging task. There are several common issues developers face:
 
-- **Bulk Updates**: Make bulk updates to environment variable values across all your projects. Envolve provides an efficient way to change values universally.
+1. **Disorganization**: Multiple .env files scattered across various project folders can lead to disorganization and confusion.
 
-- **Symbolic Linking**: Use symbolic links to easily copy `.env` files from your collection to your current project, ensuring that you have the right configuration at your fingertips.
+2. **Configuration Changes**: Over time, you may need to update environment variables across multiple projects. Manually making these changes in each .env file is tedious and error-prone.
+
+3. **Data Loss**: When you delete or archive a project, you risk losing the associated .env files and their crucial configuration data.
+
+## Envolve's Solution
+
+Envolve aims to address these issues by providing a streamlined solution:
+
+1. **Centralization**: Envolve centralizes all your .env files in a dedicated folder, making it easy to find and manage them.
+
+2. **Bulk Updates**: You can make changes to environment variables across multiple projects with a single command.
+
+3. **Symlink Support**: Envolve allows you to create symbolic links to your .env files, ensuring that you don't lose crucial configuration data when projects are deleted or archived.
+
+4. **Visualization**: With Envolve, you can view the content of .env files in an organized tabular format for better clarity.
+
+5. **Comparison**: Envolve can compare two .env files and highlight the differences, making it easier to identify changes in your configuration.
 
 ## Contributors
 
