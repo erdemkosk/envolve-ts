@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const program = require('commander');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
@@ -6,7 +7,7 @@ const { table } = require('table');
 const {
   getBaseFolder,
   getFilesRecursively,
-  readFile
+  readFile,
 } = require('./lib/file-operations');
 
 const {
@@ -14,7 +15,7 @@ const {
   updateEnvFile,
   updateAllEnvFile,
   createSymlink,
-  getValuesInEnv
+  getValuesInEnv,
 } = require('./lib/env-operations');
 
 program
@@ -68,10 +69,10 @@ program
       },
     ]);
 
-   const effectedServices =  await updateAllEnvFile({ oldValue, newValue })
+    const effectedServices = await updateAllEnvFile({ oldValue, newValue });
 
-   effectedServices.forEach(service => {
-    console.log(`Environment variables updated in "${chalk.blue(service)}"`);
+    effectedServices.forEach((service) => {
+      console.log(`Environment variables updated in "${chalk.blue(service)}"`);
     });
   });
 
@@ -108,12 +109,12 @@ program
       choices: files,
     });
 
-    const {data,config} = await getValuesInEnv({ targetPath });
+    const { data, config } = await getValuesInEnv({ targetPath });
 
     console.log(table(data, config));
   });
 
-  program
+program
   .command('update')
   .description('UPDATE a single env file')
   .alias('u')
@@ -127,7 +128,7 @@ program
       choices: files,
     });
 
-    const existingContent =  await readFile({file: targetPath});
+    const existingContent = await readFile({ file: targetPath });
 
     const { content } = await inquirer.prompt([
       {
@@ -137,13 +138,12 @@ program
         default: existingContent,
       },
     ]);
-  
+
     try {
-      await updateEnvFile({ file : targetPath, content });
+      await updateEnvFile({ file: targetPath, content });
     } catch (error) {
       console.error('An error occurred:', error);
     }
   });
-
 
 program.parse(process.argv);
