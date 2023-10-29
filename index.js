@@ -1,6 +1,7 @@
 const program = require('commander');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
+const { table } = require('table');
 
 const {
   getBaseFolder,
@@ -42,6 +43,8 @@ program
 
     try {
       await createEnvFile({ serviceName, content });
+
+      console.log(`File .env created for the "${chalk.blue(serviceName)}" service.`);
     } catch (error) {
       console.error('An error occurred:', error);
     }
@@ -65,8 +68,11 @@ program
       },
     ]);
 
-    await updateAllEnvFile({ oldValue, newValue })
+   const effectedServices =  await updateAllEnvFile({ oldValue, newValue })
 
+   effectedServices.forEach(service => {
+    console.log(`Environment variables updated in "${chalk.blue(service)}"`);
+    });
   });
 
 program
@@ -83,7 +89,9 @@ program
       choices: files,
     });
 
-    await createSymlink({ targetPath });
+    const symlinkPath = await createSymlink({ targetPath });
+
+    console.log(`Symbolic link created: "${chalk.blue(symlinkPath)}"`);
   });
 
 program
@@ -100,7 +108,9 @@ program
       choices: files,
     });
 
-    await getValuesInEnv({ targetPath });
+    const {data,config} = await getValuesInEnv({ targetPath });
+
+    console.log(table(data, config));
   });
 
   program
