@@ -31,14 +31,14 @@ describe('file-operations', () => {
       }
     })
 
-    it('should create a folder if it does not exist', () => {
-      createFolderIfDoesNotExist(folderPath)
+    it('should create a folder if it does not exist', async () => {
+      await createFolderIfDoesNotExist(folderPath)
       expect(fs.existsSync(folderPath)).toBe(true)
     })
 
-    it('should not throw an error if the folder already exists', () => {
-      createFolderIfDoesNotExist(folderPath)
-      createFolderIfDoesNotExist(folderPath)
+    it('should not throw an error if the folder already exists', async () => {
+      await createFolderIfDoesNotExist(folderPath)
+      await createFolderIfDoesNotExist(folderPath)
       expect(fs.existsSync(folderPath)).toBe(true)
     })
   })

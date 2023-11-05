@@ -27,7 +27,7 @@ program
 
 program
   .command('ls')
-  .description('SHOW env file to related service name')
+  .description(`${chalk.yellow('LIST')} environment variables in an .env file for a specific service. Select a service and view its environment variables.`)
   .action(async () => {
     const files = await getFilesRecursively({ directory: getBaseFolder() })
 
@@ -45,14 +45,14 @@ program
 
 program
   .command('sync')
-  .description('Synchronize .env files')
+  .description(`${chalk.yellow('SYNC')} backs up your current project's .env file, restores the variables from a global .env file, and creates a symbolic link to the latest environment settings.`)
   .action(async () => {
     await syncEnvFile()
   })
 
 program
   .command('update-all')
-  .description('UPDATE single value on each related service env')
+  .description(`${chalk.yellow('UPDATE-ALL')} command is a handy utility for updating a specific environment variable across multiple service-specific .env files.`)
   .alias('ua')
   .action(async () => {
     const { oldValue, newValue } = await inquirer.prompt([
@@ -73,6 +73,38 @@ program
     effectedServices.forEach((service) => {
       console.log(`Environment variables updated in "${chalk.blue(service)}"`)
     })
+  })
+
+program
+  .command('compare')
+  .description(`${chalk.yellow('COMPARE')} command is a handy utility for differences in two different files with the same variable.`)
+  .alias('comp')
+  .action(async () => {
+    const files: string [] = await getFilesRecursively({ directory: getBaseFolder() })
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'source',
+        message: 'Source',
+        choices: files
+      },
+      {
+        type: 'list',
+        name: 'destination',
+        message: 'Destination',
+        choices: (answers) => {
+          const sourceValue = answers.source
+          return files.filter((file) => file !== sourceValue)
+        }
+      }
+    ])
+
+    const { source, destination } = answers
+
+    const differentVariables = await compareEnvFiles({ source, destination })
+
+    console.log(differentVariables.length > 1 ? table(differentVariables) : chalk.red('There is no diff or two different files do not contain the same variable name'))
   })
 
 program
@@ -153,38 +185,6 @@ program
     } catch (error) {
       console.error('An error occurred:', error)
     }
-  })
-
-program
-  .command('compare')
-  .description('COMPARE differences in two different files with the same variable')
-  .alias('comp')
-  .action(async () => {
-    const files: string [] = await getFilesRecursively({ directory: getBaseFolder() })
-
-    const answers = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'source',
-        message: 'Source',
-        choices: files
-      },
-      {
-        type: 'list',
-        name: 'destination',
-        message: 'Destination',
-        choices: (answers) => {
-          const sourceValue = answers.source
-          return files.filter((file) => file !== sourceValue)
-        }
-      }
-    ])
-
-    const { source, destination } = answers
-
-    const differentVariables = await compareEnvFiles({ source, destination })
-
-    console.log(differentVariables.length > 1 ? table(differentVariables) : chalk.red('There is no diff or two different files do not contain the same variable name'))
   })
 
 program.parse(process.argv)
