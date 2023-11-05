@@ -3,6 +3,7 @@ const program = require('commander');
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const { table } = require('table');
+const packages = require('../package.json');
 
 const {
   getBaseFolder,
@@ -20,8 +21,8 @@ const {
 } = require('../lib/env-operations');
 
 program
-  .version('1.0.0')
-  .description('Envolve CLI Tool');
+  .version(packages.version)
+  .description(packages.description);
 
 program
   .command('create')
