@@ -10,7 +10,7 @@
     "start": "tsc && npm run serve",
     "test": "jest --forceExit --verbose --detectOpenHandles --coverage --coverageReporters=text-summary"
   },
-  "keywords": [],
+  "keywords": ["cli","environment-variable","env", "cli-app", "cli-tool","env-vars", "env-file" ],
   "author": "",
   "license": "ISC",
   "dependencies": {

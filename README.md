@@ -28,6 +28,15 @@ Envolve aims to address these issues by providing a streamlined solution:
 
 5. **Comparison**: Envolve can compare two .env files and highlight the differences, making it easier to identify changes in your configuration.
 
+## Installation
+
+Install envolve with npm
+
+```bash
+  npm install -g envolve
+```
+    
+
 ## Commands
 
 -   `ls`: **LIST** environment variables in an .env file for a specific service. Select a service and view its environment variables.
