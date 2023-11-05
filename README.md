@@ -29,19 +29,31 @@ Envolve aims to address these issues by providing a streamlined solution:
 5. **Comparison**: Envolve can compare two .env files and highlight the differences, making it easier to identify changes in your configuration.
 
 ## Commands
-ls: LIST environment variables in an .env file for a specific service. Select a service and view its environment variables.
 
-sync: SYNC backs up your current project's .env file, restores the variables from a global .env file, and creates a symbolic link to the latest environment settings. This command is invaluable for maintaining consistency and easily switching between environment configurations while working on different projects.
+-   `ls`: **LIST** environment variables in an .env file for a specific service. Select a service and view its environment variables.
 
-ua or update-all: The UPDATE-ALL command is a handy utility for updating a specific environment variable across multiple service-specific .env files. You'll be prompted to enter the old and new values, and then it will automatically update these values in all relevant service .env files.
+![ls](https://i.imgur.com/Bp8GEiB.gif)
+    
+-   `sync`: **SYNC** backs up your current project's .env file, restores the variables from a global .env file, and creates a symbolic link to the latest environment settings. This command is invaluable for maintaining consistency and easily switching between environment configurations while working on different projects.
 
-comp or compare: The COMPARE command is a handy utility for differences in two different files with the same variable.
+![sync](https://i.imgur.com/cV4HbGz.gif)
+    
+-   `ua` or `update-all`: The **UPDATE-ALL** command is a handy utility for updating a specific environment variable across multiple service-specific .env files. You'll be prompted to enter the old and new values, and then it will automatically update these values in all relevant service .env files.
 
-c or create: CREATE a new env file for a specific service.
+![ua](https://i.imgur.com/ig3K5PO.gif)
+    
+-   `comp` or `compare`: The **COMPARE** command is a handy utility for differences in two different files with the same variable.
 
-cp or copy: COPY an .env file to the current folder as a symlink.
+![comp](https://i.imgur.com/cZR0UB9.gif)
 
-u or update: UPDATE a single .env file for a specific service.
+    
+-   `c` or `create`: **CREATE** a new env file for a specific service.
+
+![ls](https://i.imgur.com/xNUBliW.gif)
+    
+-   `cp` or `copy`: **COPY** an .env file to the current folder as a symlink.
+    
+-   `u` or `update`: **UPDATE** a single .env file for a specific service.
 
 
 
