@@ -13,7 +13,7 @@ import {
 
 async function createEnvFile ({ serviceName, content }: { serviceName: string, content: string }): Promise<void> {
   const serviceFolderPath: string = path.join(getBaseFolder(), serviceName)
-  createFolderIfDoesNotExist(serviceFolderPath)
+  await createFolderIfDoesNotExist(serviceFolderPath)
 
   const filePath: string = path.join(serviceFolderPath, '.env')
   await writeFile({ file: filePath, newFileContents: content })
@@ -152,7 +152,7 @@ async function syncEnvFile (): Promise<void> {
   const directoryName: string = currentDirectory.split('/').pop() ?? ''
   const serviceFolderPath: string = path.join(getBaseFolder(), directoryName)
 
-  createFolderIfDoesNotExist(serviceFolderPath)
+  await createFolderIfDoesNotExist(serviceFolderPath)
 
   await copyFile(path.join(currentDirectory, '.env'), path.join(serviceFolderPath, '.env'))
   await deleteFile(path.join(currentDirectory, '.env'))

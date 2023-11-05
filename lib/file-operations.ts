@@ -31,9 +31,9 @@ async function deleteFile (filePath: string): Promise<void> {
   })
 }
 
-function createFolderIfDoesNotExist (folderPath: string): void {
+async function createFolderIfDoesNotExist (folderPath: fs.PathLike): Promise<void> {
   if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true })
+    await fs.promises.mkdir(folderPath, { recursive: true })
   }
 }
 
