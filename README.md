@@ -77,5 +77,13 @@ A big thank you to all the contributors who have helped make Envolve better:
         <sub><b>Süleyman Taşpınar</b></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/mscandan">
+        <img src="https://github.com/mscandan.png" width="100px;" alt="mehmetselcukcandan"/>
+        <br />
+        <sub><b>Mehmet Selçuk Candan</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
+
