@@ -18,6 +18,7 @@ const {
   createSymlink,
   getValuesInEnv,
   compareEnvFiles,
+  syncEnvFile,
 } = require('../lib/env-operations');
 
 program
@@ -180,6 +181,13 @@ program
     const differentVariables = await compareEnvFiles({ source, destination });
 
     console.log(differentVariables.length > 1 ? table(differentVariables) : chalk.red('There is no diff or two different files do not contain the same variable name'));
+  });
+
+program
+  .command('sync')
+  .description('Synchronize .env files')
+  .action(async () => {
+    await syncEnvFile();
   });
 
 program.parse(process.argv);
