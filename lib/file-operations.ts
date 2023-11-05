@@ -1,0 +1,82 @@
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
+
+const homedir: string = os.homedir()
+const baseFolder: string = path.join(homedir, '.envolve')
+
+function getBaseFolder (): string {
+  return baseFolder
+}
+
+async function readFile ({ file }: { file: string }): Promise<string | undefined> {
+  if (fs.existsSync(file)) {
+    return await fs.promises.readFile(file, 'utf8')
+  }
+}
+
+async function writeFile ({ file, newFileContents }: { file: string, newFileContents: string }): Promise<void> {
+  await fs.promises.writeFile(file, newFileContents, 'utf8')
+}
+
+async function deleteFile (filePath: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    fs.unlink(filePath, (error) => {
+      if (error !== null) {
+        reject(error)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+function createFolderIfDoesNotExist (folderPath: string): void {
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true })
+  }
+}
+
+async function getFilesRecursively ({ directory }: { directory: string }): Promise<string[]> {
+  const files: string[] = []
+  const dirents = await fs.promises.readdir(directory, { withFileTypes: true })
+
+  for (const dirent of dirents) {
+    const resolvedPath = path.resolve(directory, dirent.name)
+    if (dirent.isDirectory()) {
+      const subDirFiles = await getFilesRecursively({ directory: resolvedPath })
+      files.push(...subDirFiles)
+    } else if (dirent.isFile() && dirent.name !== '.DS_Store') {
+      files.push(resolvedPath)
+    }
+  }
+
+  return files
+}
+
+async function generateSymlink ({ targetPath, symlinkPath }: { targetPath: string, symlinkPath: string }): Promise<void> {
+  await fs.promises.symlink(path.join(targetPath), symlinkPath, 'file')
+}
+
+async function copyFile (sourcePath: string, destinationPath: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    fs.copyFile(sourcePath, destinationPath, (error) => {
+      if (error != null) {
+        reject(error)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+export {
+  getBaseFolder,
+  readFile,
+  writeFile,
+  getFilesRecursively,
+  createFolderIfDoesNotExist,
+  generateSymlink,
+  copyFile,
+  deleteFile
+}
