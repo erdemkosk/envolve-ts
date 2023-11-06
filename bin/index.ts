@@ -1,5 +1,6 @@
 import { Command } from 'commander'
 import inquirer from 'inquirer'
+import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
 import { table } from 'table'
 import packages from '../package.json'
@@ -16,10 +17,12 @@ import {
   createSymlink,
   getValuesInEnv,
   compareEnvFiles,
-  syncEnvFile
+  syncEnvFile,
+  promptForEnvVariable
 } from '../lib/env-operations'
 
 const program = new Command()
+inquirer.registerPrompt('autocomplete', inquirerPrompt)
 
 program
   .version(packages.version)
@@ -55,11 +58,16 @@ program
   .description(`${chalk.yellow('UPDATE-ALL')} command is a handy utility for updating a specific environment variable across multiple service-specific .env files.`)
   .alias('ua')
   .action(async () => {
+    const oldValueOptions = await promptForEnvVariable()
+
     const { oldValue, newValue } = await inquirer.prompt([
       {
-        type: 'input',
+        type: 'autocomplete',
         name: 'oldValue',
-        message: 'Enter the old value to change:'
+        message: 'Select the old value to change:',
+        source: (answers: any, input: string) => {
+          return oldValueOptions.filter(option => option.includes(input))
+        }
       },
       {
         type: 'input',

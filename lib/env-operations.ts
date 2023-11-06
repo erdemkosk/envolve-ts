@@ -8,7 +8,8 @@ import {
   writeFile,
   generateSymlink,
   copyFile,
-  deleteFile
+  deleteFile,
+  getEnvFiles
 } from './file-operations'
 
 async function createEnvFile ({ serviceName, content }: { serviceName: string, content: string }): Promise<void> {
@@ -73,9 +74,6 @@ async function getValuesInEnv ({ targetPath }: { targetPath: string }): Promise<
   const directoryName: string = getServiceNameFromUrl({ targetPath })
 
   const config = {
-    columnDefault: {
-      width: 50
-    },
     header: {
       alignment: 'center',
       content: directoryName
@@ -159,6 +157,33 @@ async function syncEnvFile (): Promise<void> {
   await createSymlink({ targetPath: path.join(serviceFolderPath, '.env') })
 }
 
+async function promptForEnvVariable (): Promise<string[]> {
+  const baseFolder = getBaseFolder()
+  const files = await getEnvFiles(baseFolder)
+
+  const variables = new Set<string>()
+
+  for (const file of files) {
+    const fileVariables = await readFile({ file })
+    if (fileVariables != null) {
+      const sourceLines: string[] = fileVariables.split('\n')
+
+      for (const line of sourceLines) {
+        if (line.trim() !== '') {
+          const parts: string[] = line.split('=')
+          if (parts.length === 2) {
+            variables.add(parts[0])
+          }
+        }
+      }
+    }
+  }
+  const uniqueVariables = Array.from(variables)
+  uniqueVariables.sort()
+
+  return uniqueVariables
+}
+
 export {
   createEnvFile,
   updateEnvFile,
@@ -166,5 +191,6 @@ export {
   createSymlink,
   getValuesInEnv,
   compareEnvFiles,
-  syncEnvFile
+  syncEnvFile,
+  promptForEnvVariable
 }
