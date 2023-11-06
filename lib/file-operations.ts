@@ -15,59 +15,66 @@ async function readFile ({ file }: { file: string }): Promise<string | undefined
   }
 }
 
-async function writeFile ({ file, newFileContents }: { file: string, newFileContents: string }): Promise<void> {
+async function writeFile ({
+  file,
+  newFileContents
+}: {
+  file: string
+  newFileContents: string
+}): Promise<void> {
   await fs.promises.writeFile(file, newFileContents, 'utf8')
 }
 
 async function deleteFile (filePath: string): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    fs.unlink(filePath, (error) => {
-      if (error !== null) {
-        reject(error)
-      } else {
-        resolve()
-      }
-    })
-  })
+  await fs.promises.unlink(filePath)
 }
 
 async function createFolderIfDoesNotExist (folderPath: fs.PathLike): Promise<void> {
   if (!fs.existsSync(folderPath)) {
-    await fs.promises.mkdir(folderPath, { recursive: true })
+    await fs.promises.mkdir(folderPath, { recursive: true, mode: 0o755 })
   }
 }
 
-async function getFilesRecursively ({ directory }: { directory: string }): Promise<string[]> {
+async function getFilesRecursively ({
+  directory
+}: {
+  directory: string
+}): Promise<string[]> {
   const files: string[] = []
-  const dirents = await fs.promises.readdir(directory, { withFileTypes: true })
+  await readDir(directory, files)
+  return files
+}
 
+async function readDir (
+  dir: string,
+  files: string[]
+): Promise<void> {
+  const dirents = await fs.promises.readdir(dir, { withFileTypes: true })
   for (const dirent of dirents) {
-    const resolvedPath = path.resolve(directory, dirent.name)
+    const resolvedPath = path.resolve(dir, dirent.name)
     if (dirent.isDirectory()) {
-      const subDirFiles = await getFilesRecursively({ directory: resolvedPath })
-      files.push(...subDirFiles)
+      await readDir(resolvedPath, files)
     } else if (dirent.isFile() && dirent.name !== '.DS_Store') {
       files.push(resolvedPath)
     }
   }
-
-  return files
 }
 
-async function generateSymlink ({ targetPath, symlinkPath }: { targetPath: string, symlinkPath: string }): Promise<void> {
-  await fs.promises.symlink(path.join(targetPath), symlinkPath, 'file')
+async function generateSymlink ({
+  targetPath,
+  symlinkPath
+}: {
+  targetPath: string
+  symlinkPath: string
+}): Promise<void> {
+  await fs.promises.symlink(targetPath, symlinkPath, 'file')
 }
 
-async function copyFile (sourcePath: string, destinationPath: string): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    fs.copyFile(sourcePath, destinationPath, (error) => {
-      if (error != null) {
-        reject(error)
-      } else {
-        resolve()
-      }
-    })
-  })
+async function copyFile (
+  sourcePath: string,
+  destinationPath: string
+): Promise<void> {
+  await fs.promises.copyFile(sourcePath, destinationPath)
 }
 
 async function getEnvFiles (baseFolder: string): Promise<string[]> {

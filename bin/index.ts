@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import inquirer from 'inquirer'
 import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
-import { table } from 'table'
+import Table from 'cli-table3'
 import packages from '../package.json'
 import {
   getBaseFolder,
@@ -41,9 +41,20 @@ program
       choices: files
     })
 
-    const { data, config } = await getValuesInEnv({ targetPath })
+    const { data } = await getValuesInEnv({ targetPath })
 
-    console.log(table(data, config))
+    const table = new Table({
+      head: ['ENV', 'VALUE'],
+      colWidths: [20, 30],
+      wrapOnWordBoundary: false,
+      wordWrap: true
+    })
+
+    data.forEach(row => {
+      table.push(row)
+    })
+
+    console.log(table.toString())
   })
 
 program
@@ -58,15 +69,15 @@ program
   .description(`${chalk.yellow('UPDATE-ALL')} command is a handy utility for updating a specific environment variable across multiple service-specific .env files.`)
   .alias('ua')
   .action(async () => {
-    const oldValueOptions = await promptForEnvVariable()
+    const envOptions = await promptForEnvVariable()
 
-    const { oldValue, newValue } = await inquirer.prompt([
+    const { envValue, newValue } = await inquirer.prompt([
       {
         type: 'autocomplete',
-        name: 'oldValue',
-        message: 'Select the old value to change:',
+        name: 'envValue',
+        message: 'Select the env value to change:',
         source: (answers: any, input: string) => {
-          return oldValueOptions.filter(option => option.includes(input))
+          return envOptions.filter(option => option.includes(input))
         }
       },
       {
@@ -76,7 +87,7 @@ program
       }
     ])
 
-    const effectedServices = await updateAllEnvFile({ oldValue, newValue })
+    const effectedServices = await updateAllEnvFile({ envValue, newValue })
 
     effectedServices.forEach((service) => {
       console.log(`Environment variables updated in "${chalk.blue(service)}"`)
@@ -110,9 +121,26 @@ program
 
     const { source, destination } = answers
 
-    const differentVariables = await compareEnvFiles({ source, destination })
+    const {
+      differentVariables,
+      sourceServiceName,
+      destinationServiceName
+    } = await compareEnvFiles({ source, destination })
 
-    console.log(differentVariables.length > 1 ? table(differentVariables) : chalk.red('There is no diff or two different files do not contain the same variable name'))
+    const table = new Table({
+      head: ['VALUES', sourceServiceName, destinationServiceName],
+      wordWrap: true,
+      colWidths: [20, 30, 30],
+      wrapOnWordBoundary: false
+    })
+
+    differentVariables.forEach(row => {
+      table.push(row)
+    })
+
+    if (differentVariables.length > 0) {
+      console.log(table.toString())
+    }
   })
 
 program
