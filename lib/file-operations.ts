@@ -70,6 +70,27 @@ async function copyFile (sourcePath: string, destinationPath: string): Promise<v
   })
 }
 
+async function getEnvFiles (baseFolder: string): Promise<string[]> {
+  const entries = await fs.promises.readdir(baseFolder, { withFileTypes: true })
+  const envFiles: string[] = []
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      const folderPath = path.join(baseFolder, entry.name)
+      const envFilePath = path.join(folderPath, '.env')
+
+      try {
+        await readFile({ file: envFilePath })
+        envFiles.push(envFilePath)
+      } catch (error) {
+        continue
+      }
+    }
+  }
+
+  return envFiles
+}
+
 export {
   getBaseFolder,
   readFile,
@@ -78,5 +99,6 @@ export {
   createFolderIfDoesNotExist,
   generateSymlink,
   copyFile,
-  deleteFile
+  deleteFile,
+  getEnvFiles
 }
