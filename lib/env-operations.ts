@@ -64,9 +64,12 @@ async function getValuesInEnv ({ targetPath }: { targetPath: string }): Promise<
 
   for (const line of lines) {
     if (line.trim() !== '') {
-      const parts: string[] = line.split('=')
-      if (parts.length === 2) {
-        data.push([parts[0], parts[1]])
+      const indexOfFirstEqualSign = line.indexOf('=')
+      if (indexOfFirstEqualSign >= 0) {
+        const envName = line.substring(0, indexOfFirstEqualSign)
+        const envValue = line.substring(indexOfFirstEqualSign + 1)
+
+        data.push([envName, envValue])
       }
     }
   }
@@ -170,9 +173,11 @@ async function promptForEnvVariable (): Promise<string[]> {
 
       for (const line of sourceLines) {
         if (line.trim() !== '') {
-          const parts: string[] = line.split('=')
-          if (parts.length === 2) {
-            variables.add(parts[0])
+          const indexOfFirstEqualSign = line.indexOf('=')
+          if (indexOfFirstEqualSign >= 0) {
+            const envName = line.substring(0, indexOfFirstEqualSign)
+
+            variables.add(envName)
           }
         }
       }
