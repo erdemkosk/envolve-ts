@@ -98,6 +98,19 @@ async function getEnvFiles (baseFolder: string): Promise<string[]> {
   return envFiles
 }
 
+async function doesFileExist (filePath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filePath, fs.constants.F_OK)
+    return true
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return false
+    } else {
+      throw err
+    }
+  }
+}
+
 export {
   getBaseFolder,
   readFile,
@@ -107,5 +120,6 @@ export {
   generateSymlink,
   copyFile,
   deleteFile,
-  getEnvFiles
+  getEnvFiles,
+  doesFileExist
 }

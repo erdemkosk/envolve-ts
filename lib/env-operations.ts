@@ -8,7 +8,8 @@ import {
   generateSymlink,
   copyFile,
   deleteFile,
-  getEnvFiles
+  getEnvFiles,
+  doesFileExist
 } from './file-operations'
 
 function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string {
@@ -195,16 +196,24 @@ async function compareEnvFiles ({
   }
 }
 
-async function syncEnvFile (): Promise<void> {
+async function syncEnvFile (): Promise<boolean> {
   const currentDirectory = process.cwd()
   const directoryName = currentDirectory.split('/').pop() ?? ''
   const serviceFolderPath = path.join(getBaseFolder(), directoryName)
+
+  const currentPathDoesContainEnvFile = await doesFileExist(path.join(currentDirectory, '.env'))
+
+  if (!currentPathDoesContainEnvFile) {
+    return false
+  }
 
   await createFolderIfDoesNotExist(serviceFolderPath)
 
   await copyFile(path.join(currentDirectory, '.env'), path.join(serviceFolderPath, '.env'))
   await deleteFile(path.join(currentDirectory, '.env'))
   await createSymlink({ targetPath: path.join(serviceFolderPath, '.env') })
+
+  return true
 }
 
 async function promptForEnvVariable (): Promise<string[]> {

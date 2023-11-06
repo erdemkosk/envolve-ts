@@ -34,6 +34,12 @@ program
   .action(async () => {
     const files = await getFilesRecursively({ directory: getBaseFolder() })
 
+    if (files.length === 0) {
+      console.log(`You have not registered any service yet. Go to the file path of the request with your ${chalk.blue('.env')} file in it and run the ${chalk.blue('sync')} command.`)
+
+      return
+    }
+
     const { targetPath } = await inquirer.prompt({
       type: 'list',
       name: 'targetPath',
@@ -61,7 +67,11 @@ program
   .command('sync')
   .description(`${chalk.yellow('SYNC')} backs up your current project's .env file, restores the variables from a global .env file, and creates a symbolic link to the latest environment settings.`)
   .action(async () => {
-    await syncEnvFile()
+    const isSuccess = await syncEnvFile()
+
+    isSuccess
+      ? console.log(`Synchronization was ${chalk.blue('successful')}. You are ready to go!`)
+      : console.log(`There was a ${chalk.red('problem')} synchronizing . Make sure you are on the correct file path and that your file contains an .env file`)
   })
 
 program
@@ -100,6 +110,12 @@ program
   .alias('comp')
   .action(async () => {
     const files: string [] = await getFilesRecursively({ directory: getBaseFolder() })
+
+    if (files.length < 2) {
+      console.log(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
+
+      return
+    }
 
     const answers = await inquirer.prompt([
       {
