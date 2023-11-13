@@ -18,6 +18,6 @@
             ]
         }
     },
-    "include": ["lib/*.ts", "bin/*.ts", "index.ts", "tests/**/*.ts"],
+    "include": ["lib/*.ts", "lib/*/*.ts",  "bin/*.ts", "index.ts", "tests/**/*.ts"],
     "exclude": ["node_modules" , "dist"]
 }

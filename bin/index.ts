@@ -6,20 +6,24 @@ import Table from 'cli-table3'
 import packages from '../package.json'
 import {
   getBaseFolder,
-  getFilesRecursively,
-  readFile
+  getEnvFilesRecursively
 } from '../lib/file-operations'
 
 import {
-  createEnvFile,
   updateEnvFile,
   updateAllEnvFile,
-  createSymlink,
   getValuesInEnv,
   compareEnvFiles,
   syncEnvFile,
-  promptForEnvVariable
+  promptForEnvVariable,
+  getUniqueEnvNames
 } from '../lib/env-operations'
+
+import {
+  getEnvVersions
+} from '../lib/history-operations'
+
+import { format } from 'date-fns'
 
 const program = new Command()
 inquirer.registerPrompt('autocomplete', inquirerPrompt)
@@ -32,7 +36,7 @@ program
   .command('ls')
   .description(`${chalk.yellow('LIST')} environment variables in an .env file for a specific service. Select a service and view its environment variables.`)
   .action(async () => {
-    const files = await getFilesRecursively({ directory: getBaseFolder() })
+    const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
 
     if (files.length === 0) {
       console.log(`You have not registered any service yet. Go to the file path of the request with your ${chalk.blue('.env')} file in it and run the ${chalk.blue('sync')} command.`)
@@ -87,6 +91,10 @@ program
         name: 'envValue',
         message: 'Select the env value to change:',
         source: (answers: any, input: string) => {
+          if (input === undefined) {
+            return envOptions
+          }
+
           return envOptions.filter(option => option.includes(input))
         }
       },
@@ -109,7 +117,7 @@ program
   .description(`${chalk.yellow('COMPARE')} command is a handy utility for differences in two different files with the same variable.`)
   .alias('comp')
   .action(async () => {
-    const files: string [] = await getFilesRecursively({ directory: getBaseFolder() })
+    const files: string [] = await getEnvFilesRecursively({ directory: getBaseFolder() })
 
     if (files.length < 2) {
       console.log(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
@@ -160,59 +168,11 @@ program
   })
 
 program
-  .command('create')
-  .description('CREATE a new env file')
-  .alias('c')
-  .action(async () => {
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'serviceName',
-        message: chalk.green('Enter the service name: ')
-      },
-      {
-        type: 'editor',
-        name: 'content',
-        message: chalk.green('Enter the env content: ')
-      }
-    ])
-
-    const { serviceName, content } = answers
-
-    try {
-      await createEnvFile({ serviceName, content })
-
-      console.log(`File .env created for the "${chalk.blue(serviceName)}" service.`)
-    } catch (error) {
-      console.error('An error occurred:', error)
-    }
-  })
-
-program
-  .command('copy')
-  .description('COPY env file to current folder symlink')
-  .alias('cp')
-  .action(async () => {
-    const files = await getFilesRecursively({ directory: getBaseFolder() })
-
-    const { targetPath } = await inquirer.prompt({
-      type: 'list',
-      name: 'targetPath',
-      message: 'Select an .env file to copy:',
-      choices: files
-    })
-
-    const symlinkPath = await createSymlink({ targetPath })
-
-    console.log(`Symbolic link created: "${chalk.blue(symlinkPath)}"`)
-  })
-
-program
   .command('update')
-  .description('UPDATE a single env file')
+  .description('UPDATE a single field in .env file and create a version')
   .alias('u')
   .action(async () => {
-    const files = await getFilesRecursively({ directory: getBaseFolder() })
+    const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
 
     const { targetPath } = await inquirer.prompt({
       type: 'list',
@@ -221,19 +181,86 @@ program
       choices: files
     })
 
-    const existingContent = await readFile({ file: targetPath })
+    const envOptions = await getUniqueEnvNames(targetPath)
 
-    const { content } = await inquirer.prompt([
+    const { envValue, newValue } = await inquirer.prompt([
       {
-        type: 'editor',
-        name: 'content',
-        message: chalk.green('Edit the env content:'),
-        default: existingContent
+        type: 'autocomplete',
+        name: 'envValue',
+        message: 'Select the env value to change:',
+        source: (answers: any, input: string) => {
+          if (input === undefined) {
+            return envOptions
+          }
+
+          return envOptions.filter(option => option.includes(input))
+        }
+      },
+      {
+        type: 'input',
+        name: 'newValue',
+        message: 'Enter the new value:'
       }
     ])
 
     try {
-      await updateEnvFile({ file: targetPath, content })
+      await updateEnvFile({ file: targetPath, envValue, newValue })
+      console.log(`Environment variables updated in "${chalk.blue(targetPath)}"`)
+    } catch (error) {
+      console.error('An error occurred:', error)
+    }
+  })
+
+program
+  .command('restore')
+  .description('Restore a field in .env file to a specific version')
+  .alias('r')
+  .action(async () => {
+    const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
+
+    const { targetPath } = await inquirer.prompt({
+      type: 'list',
+      name: 'targetPath',
+      message: 'Select an .env file to restore:',
+      choices: files
+    })
+
+    const envOptions = await getUniqueEnvNames(targetPath)
+
+    const { envValue } = await inquirer.prompt([
+      {
+        type: 'autocomplete',
+        name: 'envValue',
+        message: 'Select the env value to change:',
+        source: async (answers: any, input: string) => {
+          if (input === undefined) {
+            return envOptions
+          }
+
+          const filteredOptions = envOptions.filter(option => option.includes(input))
+
+          return filteredOptions
+        }
+      }
+    ])
+
+    const versions = await getEnvVersions(targetPath, envValue)
+    const { version } = await inquirer.prompt({
+      type: 'list',
+      name: 'version',
+      message: 'Select a version to restore:',
+      choices: versions.map((version: { timestamp: any, changes: Array<{ oldValue: any }> }) => {
+        const formattedTimestamp = format(new Date(version.timestamp), 'yyyy-MM-dd HH:mm:ss')
+        return {
+          name: `Version ${formattedTimestamp} - ${version.changes[0].oldValue}`,
+          value: version
+        }
+      })
+    })
+
+    try {
+      await updateEnvFile({ file: targetPath, envValue, newValue: version.changes[0].oldValue })
+      console.log(`Environment variables restored in "${chalk.blue(targetPath)}"`)
     } catch (error) {
       console.error('An error occurred:', error)
     }

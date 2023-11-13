@@ -5,7 +5,7 @@ import * as fs from 'fs'
 import {
   getBaseFolder,
   createFolderIfDoesNotExist,
-  getFilesRecursively,
+  getEnvFilesRecursively,
   readFile,
   writeFile,
   generateSymlink
@@ -43,7 +43,7 @@ describe('file-operations', () => {
     })
   })
 
-  describe('getFilesRecursively', () => {
+  describe('getEnvFilesRecursively', () => {
     const tempDir: string = path.join(os.tmpdir(), 'test-envolve')
 
     beforeAll(() => {
@@ -59,7 +59,7 @@ describe('file-operations', () => {
     })
 
     it('should return an empty array for an empty directory', async () => {
-      const files: string[] = await getFilesRecursively({ directory: tempDir })
+      const files: string[] = await getEnvFilesRecursively({ directory: tempDir })
       expect(files).toEqual([])
     })
 
@@ -69,7 +69,7 @@ describe('file-operations', () => {
       fs.writeFileSync(filePath1, 'content1')
       fs.writeFileSync(filePath2, 'content2')
 
-      const files: string[] = await getFilesRecursively({ directory: tempDir })
+      const files: string[] = await getEnvFilesRecursively({ directory: tempDir })
       expect(files).toEqual(expect.arrayContaining([filePath1, filePath2]))
     })
 
@@ -83,7 +83,7 @@ describe('file-operations', () => {
       fs.writeFileSync(filePath2, 'content2')
       fs.writeFileSync(filePath3, 'content3')
 
-      const files: string[] = await getFilesRecursively({ directory: tempDir })
+      const files: string[] = await getEnvFilesRecursively({ directory: tempDir })
       expect(files).toEqual(expect.arrayContaining([filePath1, filePath2, filePath3]))
     })
   })

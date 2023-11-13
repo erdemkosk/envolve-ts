@@ -2,7 +2,7 @@ import * as path from 'path'
 import {
   getBaseFolder,
   createFolderIfDoesNotExist,
-  getFilesRecursively,
+  getEnvFilesRecursively,
   readFile,
   writeFile,
   generateSymlink,
@@ -11,6 +11,10 @@ import {
   getEnvFiles,
   doesFileExist
 } from './file-operations'
+
+import {
+  saveFieldVersion
+} from './history-operations'
 
 function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string {
   const parts = targetPath.split('/')
@@ -43,12 +47,40 @@ async function createEnvFile ({
 
 async function updateEnvFile ({
   file,
-  content
+  envValue,
+  newValue
 }: {
   file: string
-  content: string
+  envValue: string
+  newValue: string
 }): Promise<void> {
-  await writeFile({ file, newFileContents: content })
+  const oldValue = await getEnvValue(file, envValue)
+
+  if (oldValue !== undefined) {
+    const updatedFileContent = await readFile({ file })
+
+    if (updatedFileContent !== undefined) {
+      const updatedLines = updatedFileContent.split('\n').map(line => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [currentEnvName, currentEnvValue] = splitEnvLine(line)
+        if (currentEnvName === envValue) {
+          return `${currentEnvName}=${newValue}`
+        }
+        return line
+      })
+
+      await saveFieldVersion(file, envValue, newValue)
+
+      await writeFile({
+        file,
+        newFileContents: updatedLines.join('\n')
+      })
+    } else {
+      console.error(`File cannot read: ${file}`)
+    }
+  } else {
+    console.error(`Expected ${envValue} cannot find in a file.`)
+  }
 }
 
 async function updateAllEnvFile ({
@@ -58,7 +90,7 @@ async function updateAllEnvFile ({
   envValue: string
   newValue: string
 }): Promise<string[]> {
-  const files = await getFilesRecursively({ directory: getBaseFolder() })
+  const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
   const effectedServices: string[] = []
 
   for (const file of files) {
@@ -72,6 +104,7 @@ async function updateAllEnvFile ({
       })
 
       if (newFileContents !== fileContents && newFileContents !== '') {
+        await saveFieldVersion(file, envValue, newValue)
         await writeFile({ file, newFileContents })
         effectedServices.push(file)
       }
@@ -240,6 +273,43 @@ async function promptForEnvVariable (): Promise<string[]> {
   return uniqueVariables
 }
 
+async function getUniqueEnvNames (targetFolder: string): Promise<string[]> {
+  const envNames = new Set<string>()
+
+  const fileContent = await readFile({ file: targetFolder })
+  if (fileContent != null) {
+    const sourceLines = fileContent.split('\n')
+
+    for (const line of sourceLines) {
+      if (line.trim() !== '') {
+        const [envName] = splitEnvLine(line)
+        envNames.add(envName)
+      }
+    }
+  }
+
+  const uniqueEnvNames = Array.from(envNames).sort()
+  return uniqueEnvNames
+}
+
+async function getEnvValue (targetFolder: string, envName: string): Promise<string | undefined> {
+  const fileContent = await readFile({ file: targetFolder })
+  if (fileContent != null) {
+    const sourceLines = fileContent.split('\n')
+
+    for (const line of sourceLines) {
+      if (line.trim() !== '') {
+        const [currentEnvName, value] = splitEnvLine(line)
+        if (currentEnvName === envName) {
+          return value
+        }
+      }
+    }
+  }
+
+  return undefined
+}
+
 export {
   createEnvFile,
   updateEnvFile,
@@ -250,5 +320,7 @@ export {
   syncEnvFile,
   promptForEnvVariable,
   getServiceNameFromUrl,
-  splitEnvLine
+  splitEnvLine,
+  getUniqueEnvNames,
+  getEnvValue
 }

@@ -35,27 +35,30 @@ async function createFolderIfDoesNotExist (folderPath: fs.PathLike): Promise<voi
   }
 }
 
-async function getFilesRecursively ({
-  directory
-}: {
-  directory: string
-}): Promise<string[]> {
-  const files: string[] = []
-  await readDir(directory, files)
-  return files
+async function createFileIfNotExists (filePath: fs.PathLike, initialContent: string = '[]'): Promise<void> {
+  try {
+    await fs.promises.access(filePath)
+  } catch (error) {
+    await fs.promises.writeFile(filePath, initialContent, 'utf8')
+  }
 }
 
-async function readDir (
-  dir: string,
-  files: string[]
-): Promise<void> {
+async function getEnvFilesRecursively ({ directory }: { directory: string }): Promise<string[]> {
+  const envFiles: string[] = []
+  await readDir(directory, envFiles)
+  return envFiles
+}
+
+async function readDir (dir: string, envFiles: string[]): Promise<void> {
   const dirents = await fs.promises.readdir(dir, { withFileTypes: true })
+
   for (const dirent of dirents) {
     const resolvedPath = path.resolve(dir, dirent.name)
+
     if (dirent.isDirectory()) {
-      await readDir(resolvedPath, files)
-    } else if (dirent.isFile() && dirent.name !== '.DS_Store') {
-      files.push(resolvedPath)
+      await readDir(resolvedPath, envFiles)
+    } else if (dirent.isFile() && dirent.name === '.env') {
+      envFiles.push(resolvedPath)
     }
   }
 }
@@ -115,11 +118,12 @@ export {
   getBaseFolder,
   readFile,
   writeFile,
-  getFilesRecursively,
+  getEnvFilesRecursively,
   createFolderIfDoesNotExist,
   generateSymlink,
   copyFile,
   deleteFile,
   getEnvFiles,
-  doesFileExist
+  doesFileExist,
+  createFileIfNotExists
 }
