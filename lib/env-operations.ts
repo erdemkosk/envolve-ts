@@ -13,7 +13,8 @@ import {
 } from './file-operations'
 
 import {
-  saveFieldVersion
+  saveFieldVersion,
+  saveFieldVersionsInSync
 } from './history-operations'
 
 function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string {
@@ -240,11 +241,13 @@ async function syncEnvFile (): Promise<boolean> {
     return false
   }
 
-  await createFolderIfDoesNotExist(serviceFolderPath)
+  const envValues = await getValuesInEnv({ targetPath: path.join(currentDirectory, '.env') })
 
+  await createFolderIfDoesNotExist(serviceFolderPath)
   await copyFile(path.join(currentDirectory, '.env'), path.join(serviceFolderPath, '.env'))
   await deleteFile(path.join(currentDirectory, '.env'))
   await createSymlink({ targetPath: path.join(serviceFolderPath, '.env') })
+  await saveFieldVersionsInSync(serviceFolderPath, envValues.data)
 
   return true
 }
@@ -310,6 +313,54 @@ async function getEnvValue (targetFolder: string, envName: string): Promise<stri
   return undefined
 }
 
+async function restoreEnvFile (): Promise<boolean> {
+  const currentDirectory = process.cwd()
+  const directoryName = currentDirectory.split('/').pop() ?? ''
+  const serviceFolderPath = path.join(getBaseFolder(), directoryName)
+  const versionFilePath = path.join(serviceFolderPath, 'version.json')
+
+  const versionFileContent = await readFile({ file: versionFilePath })
+
+  if (versionFileContent === undefined) {
+    console.error('Version file content is undefined.')
+    return false
+  }
+
+  const versions = JSON.parse(versionFileContent)
+
+  if (!Array.isArray(versions)) {
+    console.error('Versions is not an array.')
+    return false
+  }
+
+  const latestValues: Record<string, string> = {}
+
+  for (let i = 0; i < versions.length; i++) {
+    const changes = versions[i]?.changes
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!changes || changes.length === 0) {
+      continue
+    }
+
+    for (const change of changes) {
+      latestValues[change.fieldName] = change.value
+    }
+  }
+
+  const newEnvContent = Object.entries(latestValues)
+    .map(([fieldName, value]) => `${fieldName}=${value}`)
+    .join('\n')
+
+  const newEnvFilePath = path.join(serviceFolderPath, '.env')
+
+  await writeFile({ file: newEnvFilePath, newFileContents: newEnvContent })
+
+  await createSymlink({ targetPath: newEnvFilePath })
+
+  return true
+}
+
 export {
   createEnvFile,
   updateEnvFile,
@@ -322,5 +373,6 @@ export {
   getServiceNameFromUrl,
   splitEnvLine,
   getUniqueEnvNames,
-  getEnvValue
+  getEnvValue,
+  restoreEnvFile
 }

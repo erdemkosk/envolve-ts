@@ -16,7 +16,8 @@ import {
   compareEnvFiles,
   syncEnvFile,
   promptForEnvVariable,
-  getUniqueEnvNames
+  getUniqueEnvNames,
+  restoreEnvFile
 } from '../lib/env-operations'
 
 import {
@@ -169,7 +170,7 @@ program
 
 program
   .command('update')
-  .description('UPDATE a single field in .env file and create a version')
+  .description(`${chalk.yellow('UPDATE')} a single field in .env file and create a version.`)
   .alias('u')
   .action(async () => {
     const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
@@ -212,8 +213,8 @@ program
   })
 
 program
-  .command('restore')
-  .description('Restore a field in .env file to a specific version')
+  .command('revert')
+  .description(`${chalk.yellow('REVERT')} a field in .env file to a specific version`)
   .alias('r')
   .action(async () => {
     const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
@@ -264,6 +265,17 @@ program
     } catch (error) {
       console.error('An error occurred:', error)
     }
+  })
+
+program
+  .command('restore-env')
+  .description(`${chalk.yellow('RESTORE')} the .env file based on the latest changes in the version.json file.`)
+  .action(async () => {
+    const isSuccess = await restoreEnvFile()
+
+    isSuccess
+      ? console.log('Reversion was successful. You are ready to go!')
+      : console.log('There was a problem reverting .env file.')
   })
 
 program.parse(process.argv)

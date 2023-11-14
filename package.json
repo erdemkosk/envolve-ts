@@ -1,6 +1,6 @@
 {
   "name": "envolve",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Envolve CLI is a powerful tool for managing environment variables in your projects. It allows you to easily create, update, compare, and sync environment files across different services.",
   "main": "index.ts",
   "scripts": {
