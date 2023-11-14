@@ -7,7 +7,7 @@ import packages from '../package.json'
 import {
   getBaseFolder,
   getEnvFilesRecursively
-} from '../lib/file-operations'
+} from '../lib/fileHandler'
 
 import {
   updateEnvFile,
@@ -18,13 +18,26 @@ import {
   promptForEnvVariable,
   getUniqueEnvNames,
   restoreEnvFile
-} from '../lib/env-operations'
+} from '../lib/envHandler'
 
 import {
   getEnvVersions
-} from '../lib/history-operations'
+} from '../lib/historyHandler'
 
 import { format } from 'date-fns'
+
+async function askForConfirmation (): Promise<boolean> {
+  const answer = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirmation',
+      message: 'Are you sure you want to perform this operation?',
+      default: false
+    }
+  ])
+
+  return answer.confirmation
+}
 
 const program = new Command()
 inquirer.registerPrompt('autocomplete', inquirerPrompt)
@@ -81,7 +94,7 @@ program
 
 program
   .command('update-all')
-  .description(`${chalk.yellow('UPDATE-ALL')} command is a handy utility for updating a specific environment variable across multiple service-specific .env files.`)
+  .description(`${chalk.yellow('UPDATE-ALL')} occurrences of a specific environment variable across multiple service-specific .env files.`)
   .alias('ua')
   .action(async () => {
     const envOptions = await promptForEnvVariable()
@@ -105,6 +118,13 @@ program
         message: 'Enter the new value:'
       }
     ])
+
+    const isConfirmed = await askForConfirmation()
+
+    if (!isConfirmed) {
+      console.log(`Operation is ${chalk.red('cancelled!')}`)
+      return
+    }
 
     const effectedServices = await updateAllEnvFile({ envValue, newValue })
 
@@ -271,6 +291,13 @@ program
   .command('restore-env')
   .description(`${chalk.yellow('RESTORE')} the .env file based on the latest changes in the version.json file.`)
   .action(async () => {
+    const isConfirmed = await askForConfirmation()
+
+    if (!isConfirmed) {
+      console.log(`Operation is ${chalk.red('cancelled!')}`)
+      return
+    }
+
     const isSuccess = await restoreEnvFile()
 
     isSuccess

@@ -6,11 +6,11 @@ import {
   createFileIfNotExists,
   readFile,
   writeFile
-} from './file-operations'
+} from './fileHandler'
 
 import {
   getEnvValue
-} from './env-operations'
+} from './envHandler'
 
 export async function saveFieldVersion (targetPath: string, fieldName: string, value: string): Promise<void> {
   const versionFilePath = path.join(path.dirname(targetPath), 'version.json')
@@ -63,8 +63,6 @@ export async function saveFieldVersionsInSync (serviceFolderPath: string, envVal
 
   for (const [fieldName, value] of envValues) {
     const oldValue = await getEnvValue(path.join(serviceFolderPath, '.env'), fieldName)
-
-    console.log(oldValue)
 
     const newVersion = {
       timestamp: new Date().toISOString(),

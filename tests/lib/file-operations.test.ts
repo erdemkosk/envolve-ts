@@ -9,7 +9,7 @@ import {
   readFile,
   writeFile,
   generateSymlink
-} from '../../lib/file-operations'
+} from '../../lib/fileHandler'
 
 const homedir: string = os.homedir()
 const baseFolder: string = path.join(homedir, '.envolve')

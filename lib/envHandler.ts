@@ -10,12 +10,12 @@ import {
   deleteFile,
   getEnvFiles,
   doesFileExist
-} from './file-operations'
+} from './fileHandler'
 
 import {
   saveFieldVersion,
   saveFieldVersionsInSync
-} from './history-operations'
+} from './historyHandler'
 
 function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string {
   const parts = targetPath.split('/')
@@ -32,21 +32,41 @@ function splitEnvLine (line: string): [string, string] {
   return ['', '']
 }
 
-async function createEnvFile ({
-  serviceName,
-  content
+function changeValuesInEnv ({
+  contents,
+  envValue,
+  newValue
 }: {
-  serviceName: string
-  content: string
-}): Promise<void> {
-  const serviceFolderPath = path.join(getBaseFolder(), serviceName)
-  await createFolderIfDoesNotExist(serviceFolderPath)
+  contents: string
+  envValue: string
+  newValue: string
+}): string {
+  const lines = contents.split('\n')
+  const newLines = []
 
-  const filePath = path.join(serviceFolderPath, '.env')
-  await writeFile({ file: filePath, newFileContents: content })
+  for (const line of lines) {
+    const parts = line.split('=')
+    if (parts[0] === envValue) {
+      newLines.push(`${envValue}=${newValue}`)
+    } else {
+      newLines.push(line)
+    }
+  }
+
+  return newLines.join('\n')
 }
 
-async function updateEnvFile ({
+async function createSymlink ({
+  targetPath
+}: {
+  targetPath: string
+}): Promise<string> {
+  const symlinkPath = path.join(process.cwd(), '.env')
+  await generateSymlink({ targetPath: path.join(targetPath), symlinkPath })
+  return symlinkPath
+}
+
+export async function updateEnvFile ({
   file,
   envValue,
   newValue
@@ -84,7 +104,7 @@ async function updateEnvFile ({
   }
 }
 
-async function updateAllEnvFile ({
+export async function updateAllEnvFile ({
   envValue,
   newValue
 }: {
@@ -115,17 +135,7 @@ async function updateAllEnvFile ({
   return effectedServices
 }
 
-async function createSymlink ({
-  targetPath
-}: {
-  targetPath: string
-}): Promise<string> {
-  const symlinkPath = path.join(process.cwd(), '.env')
-  await generateSymlink({ targetPath: path.join(targetPath), symlinkPath })
-  return symlinkPath
-}
-
-async function getValuesInEnv ({
+export async function getValuesInEnv ({
   targetPath
 }: {
   targetPath: string
@@ -151,31 +161,7 @@ async function getValuesInEnv ({
   }
 }
 
-function changeValuesInEnv ({
-  contents,
-  envValue,
-  newValue
-}: {
-  contents: string
-  envValue: string
-  newValue: string
-}): string {
-  const lines = contents.split('\n')
-  const newLines = []
-
-  for (const line of lines) {
-    const parts = line.split('=')
-    if (parts[0] === envValue) {
-      newLines.push(`${envValue}=${newValue}`)
-    } else {
-      newLines.push(line)
-    }
-  }
-
-  return newLines.join('\n')
-}
-
-async function compareEnvFiles ({
+export async function compareEnvFiles ({
   source,
   destination
 }: {
@@ -230,7 +216,7 @@ async function compareEnvFiles ({
   }
 }
 
-async function syncEnvFile (): Promise<boolean> {
+export async function syncEnvFile (): Promise<boolean> {
   const currentDirectory = process.cwd()
   const directoryName = currentDirectory.split('/').pop() ?? ''
   const serviceFolderPath = path.join(getBaseFolder(), directoryName)
@@ -252,7 +238,7 @@ async function syncEnvFile (): Promise<boolean> {
   return true
 }
 
-async function promptForEnvVariable (): Promise<string[]> {
+export async function promptForEnvVariable (): Promise<string[]> {
   const baseFolder = getBaseFolder()
   const files = await getEnvFiles(baseFolder)
 
@@ -276,7 +262,7 @@ async function promptForEnvVariable (): Promise<string[]> {
   return uniqueVariables
 }
 
-async function getUniqueEnvNames (targetFolder: string): Promise<string[]> {
+export async function getUniqueEnvNames (targetFolder: string): Promise<string[]> {
   const envNames = new Set<string>()
 
   const fileContent = await readFile({ file: targetFolder })
@@ -295,7 +281,7 @@ async function getUniqueEnvNames (targetFolder: string): Promise<string[]> {
   return uniqueEnvNames
 }
 
-async function getEnvValue (targetFolder: string, envName: string): Promise<string | undefined> {
+export async function getEnvValue (targetFolder: string, envName: string): Promise<string | undefined> {
   const fileContent = await readFile({ file: targetFolder })
   if (fileContent != null) {
     const sourceLines = fileContent.split('\n')
@@ -313,7 +299,7 @@ async function getEnvValue (targetFolder: string, envName: string): Promise<stri
   return undefined
 }
 
-async function restoreEnvFile (): Promise<boolean> {
+export async function restoreEnvFile (): Promise<boolean> {
   const currentDirectory = process.cwd()
   const directoryName = currentDirectory.split('/').pop() ?? ''
   const serviceFolderPath = path.join(getBaseFolder(), directoryName)
@@ -359,20 +345,4 @@ async function restoreEnvFile (): Promise<boolean> {
   await createSymlink({ targetPath: newEnvFilePath })
 
   return true
-}
-
-export {
-  createEnvFile,
-  updateEnvFile,
-  updateAllEnvFile,
-  createSymlink,
-  getValuesInEnv,
-  compareEnvFiles,
-  syncEnvFile,
-  promptForEnvVariable,
-  getServiceNameFromUrl,
-  splitEnvLine,
-  getUniqueEnvNames,
-  getEnvValue,
-  restoreEnvFile
 }
