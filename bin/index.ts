@@ -1,45 +1,22 @@
-import { Command } from 'commander'
+import { Command as CommanderCommand } from 'commander'
 import inquirer from 'inquirer'
 import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
-import Table from 'cli-table3'
 import packages from '../package.json'
-import {
-  getBaseFolder,
-  getEnvFilesRecursively
-} from '../lib/fileHandler'
 
 import {
-  updateEnvFile,
-  updateAllEnvFile,
-  getValuesInEnv,
-  compareEnvFiles,
-  syncEnvFile,
-  promptForEnvVariable,
-  getUniqueEnvNames,
-  restoreEnvFile
-} from '../lib/envHandler'
+  CommandInvoker,
+  type Command,
+  LsCommand,
+  SyncCommand,
+  UpdateAllCommand,
+  CompareCommand,
+  UpdateCommand,
+  RevertCommand,
+  RestoreCommand
+} from '../lib/command'
 
-import {
-  getEnvVersions
-} from '../lib/historyHandler'
-
-import { format } from 'date-fns'
-
-async function askForConfirmation (): Promise<boolean> {
-  const answer = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'confirmation',
-      message: 'Are you sure you want to perform this operation?',
-      default: false
-    }
-  ])
-
-  return answer.confirmation
-}
-
-const program = new Command()
+const program = new CommanderCommand()
 inquirer.registerPrompt('autocomplete', inquirerPrompt)
 
 program
@@ -50,46 +27,16 @@ program
   .command('ls')
   .description(`${chalk.yellow('LIST')} environment variables in an .env file for a specific service. Select a service and view its environment variables.`)
   .action(async () => {
-    const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
-
-    if (files.length === 0) {
-      console.log(`You have not registered any service yet. Go to the file path of the request with your ${chalk.blue('.env')} file in it and run the ${chalk.blue('sync')} command.`)
-
-      return
-    }
-
-    const { targetPath } = await inquirer.prompt({
-      type: 'list',
-      name: 'targetPath',
-      message: 'Select an .env file to show:',
-      choices: files
-    })
-
-    const { data } = await getValuesInEnv({ targetPath })
-
-    const table = new Table({
-      head: ['ENV', 'VALUE'],
-      colWidths: [20, 30],
-      wrapOnWordBoundary: false,
-      wordWrap: true
-    })
-
-    data.forEach(row => {
-      table.push(row)
-    })
-
-    console.log(table.toString())
+    const command: Command = new LsCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program
   .command('sync')
   .description(`${chalk.yellow('SYNC')} backs up your current project's .env file, restores the variables from a global .env file, and creates a symbolic link to the latest environment settings.`)
   .action(async () => {
-    const isSuccess = await syncEnvFile()
-
-    isSuccess
-      ? console.log(`Synchronization was ${chalk.blue('successful')}. You are ready to go!`)
-      : console.log(`There was a ${chalk.red('problem')} synchronizing . Make sure you are on the correct file path and that your file contains an .env file`)
+    const command: Command = new SyncCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program
@@ -97,40 +44,8 @@ program
   .description(`${chalk.yellow('UPDATE-ALL')} occurrences of a specific environment variable across multiple service-specific .env files.`)
   .alias('ua')
   .action(async () => {
-    const envOptions = await promptForEnvVariable()
-
-    const { envValue, newValue } = await inquirer.prompt([
-      {
-        type: 'autocomplete',
-        name: 'envValue',
-        message: 'Select the env value to change:',
-        source: (answers: any, input: string) => {
-          if (input === undefined) {
-            return envOptions
-          }
-
-          return envOptions.filter(option => option.includes(input))
-        }
-      },
-      {
-        type: 'input',
-        name: 'newValue',
-        message: 'Enter the new value:'
-      }
-    ])
-
-    const isConfirmed = await askForConfirmation()
-
-    if (!isConfirmed) {
-      console.log(`Operation is ${chalk.red('cancelled!')}`)
-      return
-    }
-
-    const effectedServices = await updateAllEnvFile({ envValue, newValue })
-
-    effectedServices.forEach((service) => {
-      console.log(`Environment variables updated in "${chalk.blue(service)}"`)
-    })
+    const command: Command = new UpdateAllCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program
@@ -138,54 +53,8 @@ program
   .description(`${chalk.yellow('COMPARE')} command is a handy utility for differences in two different files with the same variable.`)
   .alias('comp')
   .action(async () => {
-    const files: string [] = await getEnvFilesRecursively({ directory: getBaseFolder() })
-
-    if (files.length < 2) {
-      console.log(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
-
-      return
-    }
-
-    const answers = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'source',
-        message: 'Source',
-        choices: files
-      },
-      {
-        type: 'list',
-        name: 'destination',
-        message: 'Destination',
-        choices: (answers) => {
-          const sourceValue = answers.source
-          return files.filter((file) => file !== sourceValue)
-        }
-      }
-    ])
-
-    const { source, destination } = answers
-
-    const {
-      differentVariables,
-      sourceServiceName,
-      destinationServiceName
-    } = await compareEnvFiles({ source, destination })
-
-    const table = new Table({
-      head: ['VALUES', sourceServiceName, destinationServiceName],
-      wordWrap: true,
-      colWidths: [20, 30, 30],
-      wrapOnWordBoundary: false
-    })
-
-    differentVariables.forEach(row => {
-      table.push(row)
-    })
-
-    if (differentVariables.length > 0) {
-      console.log(table.toString())
-    }
+    const command: Command = new CompareCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program
@@ -193,43 +62,8 @@ program
   .description(`${chalk.yellow('UPDATE')} a single field in .env file and create a version.`)
   .alias('u')
   .action(async () => {
-    const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
-
-    const { targetPath } = await inquirer.prompt({
-      type: 'list',
-      name: 'targetPath',
-      message: 'Select an .env file to show:',
-      choices: files
-    })
-
-    const envOptions = await getUniqueEnvNames(targetPath)
-
-    const { envValue, newValue } = await inquirer.prompt([
-      {
-        type: 'autocomplete',
-        name: 'envValue',
-        message: 'Select the env value to change:',
-        source: (answers: any, input: string) => {
-          if (input === undefined) {
-            return envOptions
-          }
-
-          return envOptions.filter(option => option.includes(input))
-        }
-      },
-      {
-        type: 'input',
-        name: 'newValue',
-        message: 'Enter the new value:'
-      }
-    ])
-
-    try {
-      await updateEnvFile({ file: targetPath, envValue, newValue })
-      console.log(`Environment variables updated in "${chalk.blue(targetPath)}"`)
-    } catch (error) {
-      console.error('An error occurred:', error)
-    }
+    const command: Command = new UpdateCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program
@@ -237,72 +71,16 @@ program
   .description(`${chalk.yellow('REVERT')} a field in .env file to a specific version`)
   .alias('r')
   .action(async () => {
-    const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
-
-    const { targetPath } = await inquirer.prompt({
-      type: 'list',
-      name: 'targetPath',
-      message: 'Select an .env file to restore:',
-      choices: files
-    })
-
-    const envOptions = await getUniqueEnvNames(targetPath)
-
-    const { envValue } = await inquirer.prompt([
-      {
-        type: 'autocomplete',
-        name: 'envValue',
-        message: 'Select the env value to change:',
-        source: async (answers: any, input: string) => {
-          if (input === undefined) {
-            return envOptions
-          }
-
-          const filteredOptions = envOptions.filter(option => option.includes(input))
-
-          return filteredOptions
-        }
-      }
-    ])
-
-    const versions = await getEnvVersions(targetPath, envValue)
-    const { version } = await inquirer.prompt({
-      type: 'list',
-      name: 'version',
-      message: 'Select a version to restore:',
-      choices: versions.map((version: { timestamp: any, changes: Array<{ oldValue: any }> }) => {
-        const formattedTimestamp = format(new Date(version.timestamp), 'yyyy-MM-dd HH:mm:ss')
-        return {
-          name: `Version ${formattedTimestamp} - ${version.changes[0].oldValue}`,
-          value: version
-        }
-      })
-    })
-
-    try {
-      await updateEnvFile({ file: targetPath, envValue, newValue: version.changes[0].oldValue })
-      console.log(`Environment variables restored in "${chalk.blue(targetPath)}"`)
-    } catch (error) {
-      console.error('An error occurred:', error)
-    }
+    const command: Command = new RevertCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program
   .command('restore-env')
   .description(`${chalk.yellow('RESTORE')} the .env file based on the latest changes in the version.json file.`)
   .action(async () => {
-    const isConfirmed = await askForConfirmation()
-
-    if (!isConfirmed) {
-      console.log(`Operation is ${chalk.red('cancelled!')}`)
-      return
-    }
-
-    const isSuccess = await restoreEnvFile()
-
-    isSuccess
-      ? console.log('Reversion was successful. You are ready to go!')
-      : console.log('There was a problem reverting .env file.')
+    const command: Command = new RestoreCommand()
+    CommandInvoker.executeCommands(command)
   })
 
 program.parse(process.argv)

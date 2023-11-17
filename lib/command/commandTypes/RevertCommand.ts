@@ -1,0 +1,62 @@
+import { Command } from '../Command'
+import { updateEnvFile, getUniqueEnvNames } from '../../envHandler'
+import { getEnvFilesRecursively } from '../../fileHandler'
+import { getEnvVersions } from '../../historyHandler'
+import chalk from 'chalk'
+import inquirer from 'inquirer'
+import { format } from 'date-fns'
+
+export class RevertCommand extends Command {
+  async beforeExecute (): Promise<any> {
+    const files = await getEnvFilesRecursively({ directory: this.baseFolder })
+
+    const { targetPath } = await inquirer.prompt({
+      type: 'list',
+      name: 'targetPath',
+      message: 'Select an .env file to restore:',
+      choices: files
+    })
+
+    const envOptions = await getUniqueEnvNames(targetPath)
+
+    const { envValue } = await inquirer.prompt([
+      {
+        type: 'autocomplete',
+        name: 'envValue',
+        message: 'Select the env value to change:',
+        source: async (answers: any, input: string) => {
+          if (input === undefined) {
+            return envOptions
+          }
+
+          const filteredOptions = envOptions.filter(option => option.includes(input))
+
+          return filteredOptions
+        }
+      }
+    ])
+
+    const versions = await getEnvVersions(targetPath, envValue)
+    const { version } = await inquirer.prompt({
+      type: 'list',
+      name: 'version',
+      message: 'Select a version to restore:',
+      choices: versions.map((version: { timestamp: any, changes: Array<{ oldValue: any }> }) => {
+        const formattedTimestamp = format(new Date(version.timestamp), 'yyyy-MM-dd HH:mm:ss')
+        return {
+          name: `Version ${formattedTimestamp} - ${version.changes[0].oldValue}`,
+          value: version
+        }
+      })
+    })
+
+    return { targetPath, envValue, newValue: version.changes[0].oldValue }
+  }
+
+  async execute (): Promise<void> {
+    const { targetPath, envValue, newValue } = await this.beforeExecute()
+
+    await updateEnvFile({ file: targetPath, envValue, newValue })
+    console.log(`Environment variables restored in "${chalk.blue(targetPath)}"`)
+  }
+}
