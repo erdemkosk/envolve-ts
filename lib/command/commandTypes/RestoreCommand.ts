@@ -1,5 +1,5 @@
-import { Command } from '../Command'
-import { restoreEnvFile } from '../../envHandler'
+import { Command } from '../command'
+import { restoreEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 
 export class RestoreCommand extends Command {

@@ -1,4 +1,4 @@
-import { getBaseFolder } from '../fileHandler'
+import { getBaseFolder } from '../handler/fileHandler'
 import inquirer from 'inquirer'
 
 export abstract class Command {

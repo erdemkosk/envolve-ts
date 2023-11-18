@@ -1,5 +1,5 @@
-import { Command } from '../Command'
-import { syncEnvFile } from '../../envHandler'
+import { Command } from '../command'
+import { syncEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 
 export class SyncCommand extends Command {

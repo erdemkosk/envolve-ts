@@ -1,6 +1,6 @@
-import { Command } from '../Command'
-import { compareEnvFiles } from '../../envHandler'
-import { getEnvFilesRecursively } from '../../fileHandler'
+import { Command } from '../command'
+import { compareEnvFiles } from '../../handler/envHandler'
+import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import Table from 'cli-table3'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
@@ -10,9 +10,7 @@ export class CompareCommand extends Command {
     const files: string [] = await getEnvFilesRecursively({ directory: this.baseFolder })
 
     if (files.length < 2) {
-      console.log(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
-
-      return
+      throw new Error(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
     }
 
     const answers = await inquirer.prompt([
@@ -39,27 +37,31 @@ export class CompareCommand extends Command {
   }
 
   async execute (): Promise<void> {
-    const { source, destination } = await this.beforeExecute()
+    try {
+      const { source, destination } = await this.beforeExecute()
 
-    const {
-      differentVariables,
-      sourceServiceName,
-      destinationServiceName
-    } = await compareEnvFiles({ source, destination })
+      const {
+        differentVariables,
+        sourceServiceName,
+        destinationServiceName
+      } = await compareEnvFiles({ source, destination })
 
-    const table = new Table({
-      head: ['VALUES', sourceServiceName, destinationServiceName],
-      wordWrap: true,
-      colWidths: [20, 30, 30],
-      wrapOnWordBoundary: false
-    })
+      const table = new Table({
+        head: ['VALUES', sourceServiceName, destinationServiceName],
+        wordWrap: true,
+        colWidths: [20, 30, 30],
+        wrapOnWordBoundary: false
+      })
 
-    differentVariables.forEach(row => {
-      table.push(row)
-    })
+      differentVariables.forEach(row => {
+        table.push(row)
+      })
 
-    if (differentVariables.length > 0) {
-      console.log(table.toString())
+      if (differentVariables.length > 0) {
+        console.log(table.toString())
+      }
+    } catch (error) {
+      console.log(error.message)
     }
   }
 }

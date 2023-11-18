@@ -1,6 +1,6 @@
 import * as path from 'path'
 
-import { type IEnvVersion } from './interfaces/env-version'
+import { type IEnvVersion } from '../interfaces/env-version'
 
 import {
   createFileIfNotExists,
