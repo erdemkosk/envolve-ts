@@ -1,4 +1,4 @@
-import { Command } from '../command'
+import { Command } from '../Command'
 import { restoreEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 
