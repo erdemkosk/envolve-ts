@@ -2,7 +2,7 @@ import { Command as CommanderCommand } from 'commander'
 import inquirer from 'inquirer'
 import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
-import packages from '../package.json'
+import packages from '../package.json' assert { type: 'json' }
 
 import {
   CommandInvoker,
