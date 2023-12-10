@@ -1,9 +1,8 @@
-#!/usr/bin/node --no-warnings --experimental-specifier-resolution=node
 import { Command as CommanderCommand } from 'commander'
 import inquirer from 'inquirer'
 import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
-import packages from '../package.json' assert { type: 'json' }
+import packages from '../package.json'
 
 import CommandFactory from '../lib/command/commandFactory'
 

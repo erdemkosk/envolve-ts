@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
-        "module": "ESNext",
+        "module": "commonjs",
         "strictNullChecks": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "target": "ES6",
+        "target": "es6",
         "noImplicitAny": true,
         "moduleResolution": "node",
         "sourceMap": true,

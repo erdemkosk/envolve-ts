@@ -1,13 +1,12 @@
 {
   "name": "envolve",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Envolve CLI is a powerful tool for managing environment variables in your projects. It allows you to easily create, update, compare, and sync environment files across different services.",
-  "main": "bin/index.ts",
-  "type": "module",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
-    "serve": "node --no-warnings --experimental-specifier-resolution=node dist/bin/index.js",
+    "serve": "node  dist/index.js",
     "start": "tsc && npm run serve",
     "test": "jest --forceExit --verbose --detectOpenHandles --coverage --coverageReporters=text-summary"
   },
@@ -52,6 +51,6 @@
     "typescript": "^5.2.2"
   },
   "bin": {
-    "envolve": "./dist/bin/index.js"
+    "envolve": "./dist/index.js"
   }
 }
