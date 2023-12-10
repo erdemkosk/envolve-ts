@@ -13,7 +13,7 @@ import {
 } from './envHandler'
 
 export async function saveFieldVersion (targetPath: string, fieldName: string, value: string): Promise<void> {
-  const versionFilePath = path.join(path.dirname(targetPath), 'version.json')
+  const versionFilePath = path.join(path.dirname(targetPath), '.version.json')
 
   await createFileIfNotExists(versionFilePath)
 
@@ -50,7 +50,7 @@ export async function saveFieldVersionsInSync (serviceFolderPath: string, envVal
     return
   }
 
-  const versionFilePath = path.join(serviceFolderPath, 'version.json')
+  const versionFilePath = path.join(serviceFolderPath, '.version.json')
   await createFileIfNotExists(versionFilePath)
 
   const versionFileContent = await readFile({ file: versionFilePath })
@@ -79,7 +79,7 @@ export async function saveFieldVersionsInSync (serviceFolderPath: string, envVal
 }
 
 export async function getEnvVersions (targetPath: string, fieldName: string): Promise<IEnvVersion[]> {
-  const versionFilePath = path.join(path.dirname(targetPath), 'version.json')
+  const versionFilePath = path.join(path.dirname(targetPath), '.version.json')
   const versionFileContent = await readFile({ file: versionFilePath })
 
   if (versionFileContent !== undefined) {

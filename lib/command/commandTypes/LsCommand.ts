@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 
 export class LsCommand extends Command {
-  async beforeExecute (): Promise<any> {
+  protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 
     if (files.length === 0) {
@@ -23,26 +23,24 @@ export class LsCommand extends Command {
     return targetPath
   }
 
-  async execute (): Promise<void> {
-    try {
-      const targetPath: string = await this.beforeExecute()
+  protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
+    const targetPath: string = beforeExecuteReturnValue
 
-      const { data } = await getValuesInEnv({ targetPath })
+    const { data } = await getValuesInEnv({ targetPath })
 
-      const table = new Table({
-        head: ['ENV', 'VALUE'],
-        colWidths: [20, 30],
-        wrapOnWordBoundary: false,
-        wordWrap: true
-      })
+    const terminalWidth = process.stdout.columns
 
-      data.forEach(row => {
-        table.push(row)
-      })
+    const table = new Table({
+      head: ['ENV', 'VALUE'],
+      colWidths: [Math.floor(terminalWidth / 2 - 5), Math.floor(terminalWidth / 2 - 5)],
+      wrapOnWordBoundary: false,
+      wordWrap: true
+    })
 
-      console.log(table.toString())
-    } catch (error) {
-      console.log(error.message)
-    }
+    data.forEach(row => {
+      table.push(row)
+    })
+
+    console.log(table.toString())
   }
 }

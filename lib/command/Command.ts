@@ -8,9 +8,19 @@ export abstract class Command {
     this.baseFolder = getBaseFolder()
   }
 
-  abstract beforeExecute (): Promise<any>
-  abstract execute (): Promise<void>
-  async askForConfirmation (): Promise<boolean> {
+  async execute (): Promise<void> {
+    try {
+      const beforeExecuteReturnValue: any = await this.beforeExecute()
+      await this.onExecute(beforeExecuteReturnValue)
+    } catch (error) {
+    }
+  }
+
+  protected abstract beforeExecute (): Promise<any>
+
+  protected abstract onExecute (value: any): Promise<void>
+
+  protected async askForConfirmation (): Promise<boolean> {
     const answer = await inquirer.prompt([
       {
         type: 'confirm',

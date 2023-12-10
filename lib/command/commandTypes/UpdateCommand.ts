@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 
 export class UpdateCommand extends Command {
-  async beforeExecute (): Promise<any> {
+  protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 
     const { targetPath } = await inquirer.prompt({
@@ -40,8 +40,8 @@ export class UpdateCommand extends Command {
     return { targetPath, envValue, newValue }
   }
 
-  async execute (): Promise<void> {
-    const { targetPath, envValue, newValue } = await this.beforeExecute()
+  protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
+    const { targetPath, envValue, newValue } = beforeExecuteReturnValue
     await updateEnvFile({ file: targetPath, envValue, newValue })
 
     console.log(`Environment variables updated in "${chalk.blue(targetPath)}"`)

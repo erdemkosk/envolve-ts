@@ -7,7 +7,7 @@ import inquirer from 'inquirer'
 import { format } from 'date-fns'
 
 export class RevertCommand extends Command {
-  async beforeExecute (): Promise<any> {
+  protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 
     const { targetPath } = await inquirer.prompt({
@@ -53,8 +53,8 @@ export class RevertCommand extends Command {
     return { targetPath, envValue, newValue: version.changes[0].oldValue }
   }
 
-  async execute (): Promise<void> {
-    const { targetPath, envValue, newValue } = await this.beforeExecute()
+  protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
+    const { targetPath, envValue, newValue } = beforeExecuteReturnValue
 
     await updateEnvFile({ file: targetPath, envValue, newValue })
     console.log(`Environment variables restored in "${chalk.blue(targetPath)}"`)

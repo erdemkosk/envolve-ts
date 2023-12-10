@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 
 export class UpdateAllCommand extends Command {
-  async beforeExecute (): Promise<any> {
+  protected async beforeExecute (): Promise<any> {
     const envOptions = await promptForEnvVariable()
 
     const { envValue, newValue } = await inquirer.prompt([
@@ -37,8 +37,8 @@ export class UpdateAllCommand extends Command {
     return await updateAllEnvFile({ envValue, newValue })
   }
 
-  async execute (): Promise<void> {
-    const effectedServices: [] = await this.beforeExecute()
+  protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
+    const effectedServices: [] = beforeExecuteReturnValue
 
     effectedServices.forEach((service) => {
       console.log(`Environment variables updated in "${chalk.blue(service)}"`)

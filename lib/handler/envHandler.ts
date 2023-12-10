@@ -22,7 +22,7 @@ function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string 
   return parts[parts.length - 2]
 }
 
-function splitEnvLine (line: string): [string, string] {
+function extractEnvVariable (line: string): [string, string] {
   const indexOfFirstEqualSign = line.indexOf('=')
   if (indexOfFirstEqualSign >= 0) {
     const envName = line.substring(0, indexOfFirstEqualSign)
@@ -83,7 +83,7 @@ export async function updateEnvFile ({
     if (updatedFileContent !== undefined) {
       const updatedLines = updatedFileContent.split('\n').map(line => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [currentEnvName, currentEnvValue] = splitEnvLine(line)
+        const [currentEnvName, currentEnvValue] = extractEnvVariable(line)
         if (currentEnvName === envValue) {
           return `${currentEnvName}=${newValue}`
         }
@@ -151,7 +151,7 @@ export async function getValuesInEnv ({
 
   for (const line of lines) {
     if (line.trim() !== '') {
-      const [envName, envValue] = splitEnvLine(line)
+      const [envName, envValue] = extractEnvVariable(line)
       data.push([envName, envValue])
     }
   }
@@ -192,17 +192,17 @@ export async function compareEnvFiles ({
   const differentVariables: string[][] = [];
 
   (sourceLines ?? []).forEach((sourceLine: string) => {
-    const sourceLineParts = splitEnvLine(sourceLine)
+    const sourceLineParts = extractEnvVariable(sourceLine)
     const variableName: string = sourceLineParts[0]
     const sourceValue: string = sourceLineParts[1]
 
     const matchingDestinationLine: string | undefined = (destinationLines ?? []).find((destinationLine) => {
-      const destinationLineParts = splitEnvLine(destinationLine)
+      const destinationLineParts = extractEnvVariable(destinationLine)
       return destinationLineParts[0] === variableName
     })
 
     if (matchingDestinationLine != null) {
-      const destinationValue = splitEnvLine(matchingDestinationLine)[1]
+      const destinationValue = extractEnvVariable(matchingDestinationLine)[1]
       if (sourceValue !== destinationValue) {
         differentVariables.push([variableName, sourceValue, destinationValue])
       }
@@ -251,7 +251,7 @@ export async function promptForEnvVariable (): Promise<string[]> {
 
       for (const line of sourceLines) {
         if (line.trim() !== '') {
-          const [envName] = splitEnvLine(line)
+          const [envName] = extractEnvVariable(line)
           variables.add(envName)
         }
       }
@@ -271,7 +271,7 @@ export async function getUniqueEnvNames (targetFolder: string): Promise<string[]
 
     for (const line of sourceLines) {
       if (line.trim() !== '') {
-        const [envName] = splitEnvLine(line)
+        const [envName] = extractEnvVariable(line)
         envNames.add(envName)
       }
     }
@@ -288,7 +288,7 @@ export async function getEnvValue (targetFolder: string, envName: string): Promi
 
     for (const line of sourceLines) {
       if (line.trim() !== '') {
-        const [currentEnvName, value] = splitEnvLine(line)
+        const [currentEnvName, value] = extractEnvVariable(line)
         if (currentEnvName === envName) {
           return value
         }
@@ -303,7 +303,7 @@ export async function restoreEnvFile (): Promise<boolean> {
   const currentDirectory = process.cwd()
   const directoryName = currentDirectory.split('/').pop() ?? ''
   const serviceFolderPath = path.join(getBaseFolder(), directoryName)
-  const versionFilePath = path.join(serviceFolderPath, 'version.json')
+  const versionFilePath = path.join(serviceFolderPath, '.version.json')
 
   const versionFileContent = await readFile({ file: versionFilePath })
 

@@ -3,7 +3,7 @@ import { restoreEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 
 export class RestoreCommand extends Command {
-  async beforeExecute (): Promise<any> {
+  protected async beforeExecute (): Promise<any> {
     const isConfirmed = await this.askForConfirmation()
 
     if (!isConfirmed) {
@@ -11,9 +11,7 @@ export class RestoreCommand extends Command {
     }
   }
 
-  async execute (): Promise<void> {
-    await this.beforeExecute()
-
+  protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
     const isSuccess = await restoreEnvFile()
 
     isSuccess
