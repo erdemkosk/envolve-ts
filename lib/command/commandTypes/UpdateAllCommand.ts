@@ -2,6 +2,7 @@ import { Command } from '../Command'
 import { updateAllEnvFile, promptForEnvVariable } from '../../handler/envHandler'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import { consola } from 'consola'
 
 export class UpdateAllCommand extends Command {
   protected async beforeExecute (): Promise<any> {
@@ -41,7 +42,7 @@ export class UpdateAllCommand extends Command {
     const effectedServices: [] = beforeExecuteReturnValue
 
     effectedServices.forEach((service) => {
-      console.log(`Environment variables updated in "${chalk.blue(service)}"`)
+      consola.success(`Environment variables updated in "${chalk.blue(service)}"`)
     })
   }
 }

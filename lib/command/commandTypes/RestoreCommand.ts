@@ -1,6 +1,7 @@
 import { Command } from '../Command'
 import { restoreEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
+import { consola } from 'consola'
 
 export class RestoreCommand extends Command {
   protected async beforeExecute (): Promise<any> {
@@ -15,7 +16,7 @@ export class RestoreCommand extends Command {
     const isSuccess = await restoreEnvFile()
 
     isSuccess
-      ? console.log('Reversion was successful. You are ready to go!')
-      : console.log('There was a problem reverting .env file.')
+      ? consola.success('Reversion was successful. You are ready to go!')
+      : consola.error('There was a problem reverting .env file.')
   }
 }

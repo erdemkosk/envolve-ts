@@ -5,6 +5,7 @@ import { getEnvVersions } from '../../handler/historyHandler'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { format } from 'date-fns'
+import { consola } from 'consola'
 
 export class RevertCommand extends Command {
   protected async beforeExecute (): Promise<any> {
@@ -41,10 +42,10 @@ export class RevertCommand extends Command {
       type: 'list',
       name: 'version',
       message: 'Select a version to restore:',
-      choices: versions.map((version: { timestamp: any, changes: Array<{ oldValue: any }> }) => {
+      choices: versions.map((version: { timestamp: any, changes: Array<{ oldValue: any, value: any }> }) => {
         const formattedTimestamp = format(new Date(version.timestamp), 'yyyy-MM-dd HH:mm:ss')
         return {
-          name: `Version ${formattedTimestamp} - ${version.changes[0].oldValue}`,
+          name: `Version ${formattedTimestamp} - ${version.changes[0].value}`,
           value: version
         }
       })
@@ -57,6 +58,6 @@ export class RevertCommand extends Command {
     const { targetPath, envValue, newValue } = beforeExecuteReturnValue
 
     await updateEnvFile({ file: targetPath, envValue, newValue })
-    console.log(`Environment variables restored in "${chalk.blue(targetPath)}"`)
+    consola.start(`Environment variables restored in "${chalk.blue(targetPath)}"`)
   }
 }

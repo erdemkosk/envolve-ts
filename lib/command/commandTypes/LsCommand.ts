@@ -4,13 +4,14 @@ import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import Table from 'cli-table3'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import { consola } from 'consola'
 
 export class LsCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 
     if (files.length === 0) {
-      throw new Error(`You have not registered any service yet. Go to the file path of the request with your ${chalk.blue('.env')} file in it and run the ${chalk.blue('sync')} command.`)
+      consola.error(`You have not registered any service yet. Go to the file path of the request with your ${chalk.blue('.env')} file in it and run the ${chalk.blue('sync')} command.`)
     }
 
     const { targetPath } = await inquirer.prompt({

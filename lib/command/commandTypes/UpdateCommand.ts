@@ -3,6 +3,7 @@ import { getUniqueEnvNames, updateEnvFile } from '../../handler/envHandler'
 import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import { consola } from 'consola'
 
 export class UpdateCommand extends Command {
   protected async beforeExecute (): Promise<any> {
@@ -44,6 +45,6 @@ export class UpdateCommand extends Command {
     const { targetPath, envValue, newValue } = beforeExecuteReturnValue
     await updateEnvFile({ file: targetPath, envValue, newValue })
 
-    console.log(`Environment variables updated in "${chalk.blue(targetPath)}"`)
+    consola.success(`Environment variables updated in "${chalk.blue(targetPath)}"`)
   }
 }

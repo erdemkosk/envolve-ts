@@ -4,13 +4,14 @@ import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import Table from 'cli-table3'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
+import { consola } from 'consola'
 
 export class CompareCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const files: string [] = await getEnvFilesRecursively({ directory: this.baseFolder })
 
     if (files.length < 2) {
-      console.log(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
+      consola.error(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
       return
     }
 
