@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/node --no-warnings --experimental-specifier-resolution=node
 import { Command as CommanderCommand } from 'commander'
 import inquirer from 'inquirer'
 import inquirerPrompt from 'inquirer-autocomplete-prompt'
