@@ -6,8 +6,8 @@ import packages from '../package.json'
 
 import CommandFactory from '../lib/command/commandFactory'
 
-import type Command from '../lib/command/Command'
-import CommandInvoker from '../lib/command/CommandInvoker'
+import type Command from '../lib/command/command'
+import CommandInvoker from '../lib/command/commandInvoker'
 import { CommandTypes } from '../lib/const'
 
 const program = new CommanderCommand()

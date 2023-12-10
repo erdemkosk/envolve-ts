@@ -1,4 +1,4 @@
-import Command from '../Command'
+import Command from '../command'
 import { updateEnvFile, getUniqueEnvNames } from '../../handler/envHandler'
 import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import { getEnvVersions } from '../../handler/historyHandler'
