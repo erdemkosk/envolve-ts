@@ -1,4 +1,4 @@
-import Command from '../command'
+import Command from '../Command'
 import { syncEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 import { consola } from 'consola'
