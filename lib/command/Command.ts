@@ -1,7 +1,7 @@
 import { getBaseFolder } from '../handler/fileHandler'
 import inquirer from 'inquirer'
 
-export abstract class Command {
+export default abstract class Command {
   protected readonly baseFolder: string
 
   constructor () {

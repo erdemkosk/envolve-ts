@@ -1,10 +1,10 @@
-import { Command } from '../Command'
+import Command from '../Command'
 import { updateAllEnvFile, promptForEnvVariable } from '../../handler/envHandler'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { consola } from 'consola'
 
-export class UpdateAllCommand extends Command {
+export default class UpdateAllCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const envOptions = await promptForEnvVariable()
 

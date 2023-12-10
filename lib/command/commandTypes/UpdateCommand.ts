@@ -1,11 +1,11 @@
-import { Command } from '../Command'
+import Command from '../Command'
 import { getUniqueEnvNames, updateEnvFile } from '../../handler/envHandler'
 import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { consola } from 'consola'
 
-export class UpdateCommand extends Command {
+export default class UpdateCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 

@@ -1,9 +1,9 @@
-import { Command } from '../Command'
+import Command from '../Command'
 import { restoreEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 import { consola } from 'consola'
 
-export class RestoreCommand extends Command {
+export default class RestoreCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const isConfirmed = await this.askForConfirmation()
 

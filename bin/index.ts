@@ -1,15 +1,13 @@
+#! /usr/bin/env node
 import { Command as CommanderCommand } from 'commander'
 import inquirer from 'inquirer'
 import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
 import packages from '../package.json' assert { type: 'json' }
 
-import {
-  CommandInvoker,
-  type Command,
-  CommandFactory
-} from '../lib/command'
-
+import CommandFactory from '../lib/command/CommandFactory'
+import type Command from '../lib/command/Command'
+import CommandInvoker from '../lib/command/CommandInvoker'
 import { CommandTypes } from '../lib/const'
 
 const program = new CommanderCommand()

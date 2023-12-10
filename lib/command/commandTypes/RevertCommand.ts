@@ -1,4 +1,4 @@
-import { Command } from '../Command'
+import Command from '../Command'
 import { updateEnvFile, getUniqueEnvNames } from '../../handler/envHandler'
 import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import { getEnvVersions } from '../../handler/historyHandler'
@@ -7,7 +7,7 @@ import inquirer from 'inquirer'
 import { format } from 'date-fns'
 import { consola } from 'consola'
 
-export class RevertCommand extends Command {
+export default class RevertCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 

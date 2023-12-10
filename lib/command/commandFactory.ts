@@ -1,16 +1,14 @@
 import { CommandTypes } from '../const'
-import {
-  type Command,
-  LsCommand,
-  SyncCommand,
-  UpdateAllCommand,
-  CompareCommand,
-  UpdateCommand,
-  RevertCommand,
-  RestoreCommand
-} from '.'
+import type Command from './Command'
+import CompareCommand from './commandTypes/CompareCommand'
+import LsCommand from './commandTypes/LsCommand'
+import RestoreCommand from './commandTypes/RestoreCommand'
+import RevertCommand from './commandTypes/RevertCommand'
+import SyncCommand from './commandTypes/SyncCommand'
+import UpdateAllCommand from './commandTypes/UpdateAllCommand'
+import UpdateCommand from './commandTypes/UpdateCommand'
 
-export class CommandFactory {
+export default class CommandFactory {
   createCommand (commandType: number): Command | null {
     switch (commandType) {
       case CommandTypes.LS:

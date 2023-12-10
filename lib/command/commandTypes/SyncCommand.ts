@@ -1,9 +1,9 @@
-import { Command } from '../Command'
+import Command from '../Command'
 import { syncEnvFile } from '../../handler/envHandler'
 import chalk from 'chalk'
 import { consola } from 'consola'
 
-export class SyncCommand extends Command {
+export default class SyncCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     return await syncEnvFile()
   }

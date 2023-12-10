@@ -1,4 +1,4 @@
-import { Command } from '../Command'
+import Command from '../Command'
 import { getValuesInEnv } from '../../handler/envHandler'
 import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import Table from 'cli-table3'
@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { consola } from 'consola'
 
-export class LsCommand extends Command {
+export default class LsCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const files = await getEnvFilesRecursively({ directory: this.baseFolder })
 
