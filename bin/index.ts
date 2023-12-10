@@ -5,9 +5,10 @@ import inquirerPrompt from 'inquirer-autocomplete-prompt'
 import chalk from 'chalk'
 import packages from '../package.json' assert { type: 'json' }
 
-import CommandFactory from '../lib/command/CommandFactory'
-import type Command from '../lib/command/Command'
-import CommandInvoker from '../lib/command/CommandInvoker'
+import CommandFactory from '../lib/command/commandFactory'
+
+import type Command from '../lib/command/command'
+import CommandInvoker from '../lib/command/commandInvoker'
 import { CommandTypes } from '../lib/const'
 
 const program = new CommanderCommand()

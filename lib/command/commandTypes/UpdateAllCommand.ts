@@ -1,4 +1,4 @@
-import Command from '../Command'
+import Command from '../command'
 import { updateAllEnvFile, promptForEnvVariable } from '../../handler/envHandler'
 import chalk from 'chalk'
 import inquirer from 'inquirer'

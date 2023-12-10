@@ -1,4 +1,4 @@
-import Command from '../Command'
+import Command from '../command'
 import { getValuesInEnv } from '../../handler/envHandler'
 import { getEnvFilesRecursively } from '../../handler/fileHandler'
 import Table from 'cli-table3'

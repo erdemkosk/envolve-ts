@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
-    "serve": "node  dist/bin/index.js",
+    "serve": "node --no-warnings --experimental-specifier-resolution=node dist/bin/index.js",
     "start": "tsc && npm run serve",
     "test": "jest --forceExit --verbose --detectOpenHandles --coverage --coverageReporters=text-summary"
   },
@@ -52,6 +52,6 @@
     "typescript": "^5.2.2"
   },
   "bin": {
-    "envolve": "./dist/bin/index.js"
+    "envolve": ".start-envolve.sh"
   }
 }
