@@ -17,6 +17,8 @@ import {
   saveFieldVersionsInSync
 } from './historyHandler'
 
+import MongoDBURIComparerLogic from '../logic/fuzzy.logic'
+
 function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string {
   const parts = targetPath.split('/')
   return parts[parts.length - 2]
@@ -128,6 +130,40 @@ export async function updateAllEnvFile ({
         await saveFieldVersion(file, envValue, newValue)
         await writeFile({ file, newFileContents })
         effectedServices.push(file)
+      }
+    }
+  }
+
+  return effectedServices
+}
+
+export async function updateAllEnvFileInFuzzy ({
+  newValue
+}: {
+  newValue: string
+}): Promise<string[]> {
+  const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
+  const effectedServices: string[] = []
+
+  for (const file of files) {
+    const fileContents = await readFile({ file })
+
+    if (fileContents !== undefined) {
+      const lines = fileContents.split('\n')
+      for (const line of lines) {
+        const [currentEnvName, currentEnvValue] = extractEnvVariable(line)
+
+        if (MongoDBURIComparerLogic.compareURIs(currentEnvValue, newValue)) {
+          const newFileContents = changeValuesInEnv({
+            contents: fileContents,
+            envValue: currentEnvName,
+            newValue
+          })
+
+          await saveFieldVersion(file, currentEnvName, newValue)
+          await writeFile({ file, newFileContents })
+          effectedServices.push(file)
+        }
       }
     }
   }

@@ -9,22 +9,22 @@ import UpdateAllCommand from './commandTypes/updateAllCommand'
 import UpdateCommand from './commandTypes/updateCommand'
 
 export default class CommandFactory {
-  createCommand (commandType: number): Command | null {
+  createCommand (commandType: number, ...params: any []): Command | null {
     switch (commandType) {
       case CommandTypes.LS:
-        return new LsCommand()
+        return new LsCommand(params)
       case CommandTypes.SYNC:
-        return new SyncCommand()
+        return new SyncCommand(params)
       case CommandTypes.COMPARE:
-        return new CompareCommand()
+        return new CompareCommand(params)
       case CommandTypes.UPDATE:
-        return new UpdateCommand()
+        return new UpdateCommand(params)
       case CommandTypes.UPDATE_ALL:
-        return new UpdateAllCommand()
+        return new UpdateAllCommand(params)
       case CommandTypes.REVERT:
-        return new RevertCommand()
+        return new RevertCommand(params)
       case CommandTypes.RESTORE_ENV:
-        return new RestoreCommand()
+        return new RestoreCommand(params)
 
       default:
         return null

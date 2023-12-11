@@ -3,9 +3,11 @@ import inquirer from 'inquirer'
 
 export default abstract class Command {
   protected readonly baseFolder: string
+  protected readonly params: any []
 
-  constructor () {
+  constructor (...params: any[]) {
     this.baseFolder = getBaseFolder()
+    this.params = params
   }
 
   async execute (): Promise<void> {

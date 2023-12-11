@@ -39,8 +39,9 @@ program
   .command('update-all')
   .description(`${chalk.yellow('UPDATE-ALL')} occurrences of a specific environment variable across multiple service-specific .env files.`)
   .alias('ua')
-  .action(async () => {
-    const command: Command | null = factory.createCommand(CommandTypes.UPDATE_ALL)
+  .option('-f, --fuzzy [value]', 'without naming the env value, mongo db etc. automatically detects the small changing parts of the derivative urls and changes them all.e')
+  .action(async (cmd) => {
+    const command: Command | null = factory.createCommand(CommandTypes.UPDATE_ALL, cmd.fuzzy)
     command !== null && CommandInvoker.executeCommands(command)
   })
 
