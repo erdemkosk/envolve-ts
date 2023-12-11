@@ -51,7 +51,7 @@ export default class RevertCommand extends Command {
       })
     })
 
-    return { targetPath, envValue, newValue: version.changes[0].oldValue }
+    return { targetPath, envValue, newValue: version.changes[0].value }
   }
 
   protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
