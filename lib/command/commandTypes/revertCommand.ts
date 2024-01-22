@@ -9,7 +9,7 @@ import { consola } from 'consola'
 
 export default class RevertCommand extends Command {
   protected async beforeExecute (): Promise<any> {
-    const files = await getEnvFilesRecursively({ directory: this.baseFolder })
+    const files = await getEnvFilesRecursively(this.baseFolder)
 
     const { targetPath } = await inquirer.prompt({
       type: 'list',
@@ -57,7 +57,7 @@ export default class RevertCommand extends Command {
   protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
     const { targetPath, envValue, newValue } = beforeExecuteReturnValue
 
-    await updateEnvFile({ file: targetPath, envValue, newValue })
+    await updateEnvFile(targetPath, envValue, newValue)
     consola.start(`Environment variables restored in "${chalk.blue(targetPath)}"`)
   }
 }

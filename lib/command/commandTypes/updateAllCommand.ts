@@ -47,7 +47,7 @@ export default class UpdateAllCommand extends Command {
         return
       }
 
-      return await updateAllEnvFile({ envValue, newValue })
+      return await updateAllEnvFile(envValue, newValue)
     }
   }
 

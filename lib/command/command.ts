@@ -1,4 +1,4 @@
-import { getBaseFolder } from '../handler/fileHandler'
+import { getEnvolveHomePath } from '../handler/fileHandler'
 import inquirer from 'inquirer'
 
 export default abstract class Command {
@@ -6,7 +6,7 @@ export default abstract class Command {
   protected readonly params: any []
 
   constructor (...params: any[]) {
-    this.baseFolder = getBaseFolder()
+    this.baseFolder = getEnvolveHomePath()
     this.params = params
   }
 

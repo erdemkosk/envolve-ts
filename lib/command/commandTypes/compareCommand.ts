@@ -8,7 +8,7 @@ import { consola } from 'consola'
 
 export default class CompareCommand extends Command {
   protected async beforeExecute (): Promise<any> {
-    const files: string [] = await getEnvFilesRecursively({ directory: this.baseFolder })
+    const files: string [] = await getEnvFilesRecursively(this.baseFolder)
 
     if (files.length < 2) {
       consola.error(`You must have a minimum of ${chalk.blue('2')} services registered to compare.`)
@@ -45,7 +45,7 @@ export default class CompareCommand extends Command {
       differentVariables,
       sourceServiceName,
       destinationServiceName
-    } = await compareEnvFiles({ source, destination })
+    } = await compareEnvFiles(source, destination)
 
     const table = new Table({
       head: ['VALUES', sourceServiceName, destinationServiceName],

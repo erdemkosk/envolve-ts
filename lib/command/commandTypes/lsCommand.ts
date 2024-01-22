@@ -8,7 +8,7 @@ import { consola } from 'consola'
 
 export default class LsCommand extends Command {
   protected async beforeExecute (): Promise<any> {
-    const files = await getEnvFilesRecursively({ directory: this.baseFolder })
+    const files = await getEnvFilesRecursively(this.baseFolder)
 
     if (files.length === 0) {
       consola.error(`You have not registered any service yet. Go to the file path of the request with your ${chalk.blue('.env')} file in it and run the ${chalk.blue('sync')} command.`)

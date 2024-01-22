@@ -1,11 +1,12 @@
 import * as path from 'path'
 import {
-  getBaseFolder,
-  createFolderIfDoesNotExist,
+  getHomePath,
+  getEnvolveHomePath,
+  createFolder,
   getEnvFilesRecursively,
   readFile,
   writeFile,
-  generateSymlink,
+  symlink,
   copyFile,
   deleteFile,
   getEnvFiles,
@@ -19,7 +20,7 @@ import {
 
 import MongoDBURIComparerLogic from '../logic/fuzzy.logic'
 
-function getServiceNameFromUrl ({ targetPath }: { targetPath: string }): string {
+function getServiceNameFromUrl (targetPath: string): string {
   const parts = targetPath.split('/')
   return parts[parts.length - 2]
 }
@@ -34,15 +35,11 @@ function extractEnvVariable (line: string): [string, string] {
   return ['', '']
 }
 
-function changeValuesInEnv ({
-  contents,
-  envValue,
-  newValue
-}: {
-  contents: string
-  envValue: string
+function changeValuesInEnv (
+  contents: string,
+  envValue: string,
   newValue: string
-}): string {
+): string {
   const lines = contents.split('\n')
   const newLines = []
 
@@ -58,29 +55,23 @@ function changeValuesInEnv ({
   return newLines.join('\n')
 }
 
-async function createSymlink ({
-  targetPath
-}: {
+async function createSymlink (
   targetPath: string
-}): Promise<string> {
+): Promise<string> {
   const symlinkPath = path.join(process.cwd(), '.env')
-  await generateSymlink({ targetPath: path.join(targetPath), symlinkPath })
+  await symlink(path.join(targetPath), symlinkPath)
   return symlinkPath
 }
 
-export async function updateEnvFile ({
-  file,
-  envValue,
-  newValue
-}: {
-  file: string
-  envValue: string
+export async function updateEnvFile (
+  file: string,
+  envValue: string,
   newValue: string
-}): Promise<void> {
+): Promise<void> {
   const oldValue = await getEnvValue(file, envValue)
 
   if (oldValue !== undefined) {
-    const updatedFileContent = await readFile({ file })
+    const updatedFileContent = await readFile(file)
 
     if (updatedFileContent !== undefined) {
       const updatedLines = updatedFileContent.split('\n').map(line => {
@@ -94,10 +85,10 @@ export async function updateEnvFile ({
 
       await saveFieldVersion(file, envValue, newValue)
 
-      await writeFile({
+      await writeFile(
         file,
-        newFileContents: updatedLines.join('\n')
-      })
+        updatedLines.join('\n')
+      )
     } else {
       console.error(`File cannot read: ${file}`)
     }
@@ -106,29 +97,26 @@ export async function updateEnvFile ({
   }
 }
 
-export async function updateAllEnvFile ({
-  envValue,
-  newValue
-}: {
-  envValue: string
+export async function updateAllEnvFile (
+  envValue: string,
   newValue: string
-}): Promise<string[]> {
-  const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
+): Promise<string[]> {
+  const files = await getEnvFilesRecursively(getEnvolveHomePath())
   const effectedServices: string[] = []
 
   for (const file of files) {
-    const fileContents = await readFile({ file })
+    const fileContents = await readFile(file)
 
     if (fileContents !== undefined) {
-      const newFileContents = changeValuesInEnv({
-        contents: fileContents,
+      const newFileContents = changeValuesInEnv(
+        fileContents,
         envValue,
         newValue
-      })
+      )
 
       if (newFileContents !== fileContents && newFileContents !== '') {
         await saveFieldVersion(file, envValue, newValue)
-        await writeFile({ file, newFileContents })
+        await writeFile(file, newFileContents)
         effectedServices.push(file)
       }
     }
@@ -142,11 +130,11 @@ export async function updateAllEnvFileInFuzzy ({
 }: {
   newValue: string
 }): Promise<string[]> {
-  const files = await getEnvFilesRecursively({ directory: getBaseFolder() })
+  const files = await getEnvFilesRecursively(getHomePath())
   const effectedServices: string[] = []
 
   for (const file of files) {
-    const fileContents = await readFile({ file })
+    const fileContents = await readFile(file)
 
     if (fileContents !== undefined) {
       const lines = fileContents.split('\n')
@@ -154,14 +142,14 @@ export async function updateAllEnvFileInFuzzy ({
         const [currentEnvName, currentEnvValue] = extractEnvVariable(line)
 
         if (MongoDBURIComparerLogic.compareURIs(currentEnvValue, newValue)) {
-          const newFileContents = changeValuesInEnv({
-            contents: fileContents,
-            envValue: currentEnvName,
+          const newFileContents = changeValuesInEnv(
+            fileContents,
+            currentEnvName,
             newValue
-          })
+          )
 
           await saveFieldVersion(file, currentEnvName, newValue)
-          await writeFile({ file, newFileContents })
+          await writeFile(file, newFileContents)
           effectedServices.push(file)
         }
       }
@@ -176,7 +164,7 @@ export async function getValuesInEnv ({
 }: {
   targetPath: string
 }): Promise<{ data: string[][] }> {
-  const contents = await readFile({ file: targetPath })
+  const contents = await readFile(targetPath)
 
   if (contents == null) {
     return { data: [] }
@@ -197,19 +185,16 @@ export async function getValuesInEnv ({
   }
 }
 
-export async function compareEnvFiles ({
-  source,
-  destination
-}: {
-  source: string
+export async function compareEnvFiles (
+  source: string,
   destination: string
-}): Promise<{
+): Promise<{
     differentVariables: string[][]
     sourceServiceName: string
     destinationServiceName: string
   }> {
-  const sourceContent = await readFile({ file: source })
-  const destinationContent = await readFile({ file: destination })
+  const sourceContent = await readFile(source)
+  const destinationContent = await readFile(destination)
 
   if (sourceContent === null || destinationContent === null) {
     return {
@@ -222,8 +207,8 @@ export async function compareEnvFiles ({
   const sourceLines = sourceContent?.split('\n')
   const destinationLines = destinationContent?.split('\n')
 
-  const sourceServiceName: string = getServiceNameFromUrl({ targetPath: source })
-  const destinationServiceName: string = getServiceNameFromUrl({ targetPath: destination })
+  const sourceServiceName: string = getServiceNameFromUrl(source)
+  const destinationServiceName: string = getServiceNameFromUrl(destination)
 
   const differentVariables: string[][] = [];
 
@@ -255,9 +240,11 @@ export async function compareEnvFiles ({
 export async function syncEnvFile (): Promise<boolean> {
   const currentDirectory = process.cwd()
   const directoryName = currentDirectory.split('/').pop() ?? ''
-  const serviceFolderPath = path.join(getBaseFolder(), directoryName)
+  const serviceFolderPath = path.join(getEnvolveHomePath(), directoryName)
 
   const currentPathDoesContainEnvFile = await doesFileExist(path.join(currentDirectory, '.env'))
+
+  console.log(serviceFolderPath)
 
   if (!currentPathDoesContainEnvFile) {
     return false
@@ -265,23 +252,22 @@ export async function syncEnvFile (): Promise<boolean> {
 
   const envValues = await getValuesInEnv({ targetPath: path.join(currentDirectory, '.env') })
 
-  await createFolderIfDoesNotExist(serviceFolderPath)
+  await createFolder(serviceFolderPath)
   await copyFile(path.join(currentDirectory, '.env'), path.join(serviceFolderPath, '.env'))
   await deleteFile(path.join(currentDirectory, '.env'))
-  await createSymlink({ targetPath: path.join(serviceFolderPath, '.env') })
+  await createSymlink(path.join(serviceFolderPath, '.env'))
   await saveFieldVersionsInSync(serviceFolderPath, envValues.data)
 
   return true
 }
 
 export async function promptForEnvVariable (): Promise<string[]> {
-  const baseFolder = getBaseFolder()
-  const files = await getEnvFiles(baseFolder)
+  const files = await getEnvFiles(getEnvolveHomePath())
 
   const variables = new Set<string>()
 
   for (const file of files) {
-    const fileVariables = await readFile({ file })
+    const fileVariables = await readFile(file)
     if (fileVariables != null) {
       const sourceLines = fileVariables.split('\n')
 
@@ -301,7 +287,7 @@ export async function promptForEnvVariable (): Promise<string[]> {
 export async function getUniqueEnvNames (targetFolder: string): Promise<string[]> {
   const envNames = new Set<string>()
 
-  const fileContent = await readFile({ file: targetFolder })
+  const fileContent = await readFile(targetFolder)
   if (fileContent != null) {
     const sourceLines = fileContent.split('\n')
 
@@ -318,7 +304,7 @@ export async function getUniqueEnvNames (targetFolder: string): Promise<string[]
 }
 
 export async function getEnvValue (targetFolder: string, envName: string): Promise<string | undefined> {
-  const fileContent = await readFile({ file: targetFolder })
+  const fileContent = await readFile(targetFolder)
   if (fileContent != null) {
     const sourceLines = fileContent.split('\n')
 
@@ -338,47 +324,15 @@ export async function getEnvValue (targetFolder: string, envName: string): Promi
 export async function restoreEnvFile (): Promise<boolean> {
   const currentDirectory = process.cwd()
   const directoryName = currentDirectory.split('/').pop() ?? ''
-  const serviceFolderPath = path.join(getBaseFolder(), directoryName)
-  const versionFilePath = path.join(serviceFolderPath, '.version.json')
+  const serviceFolderPath = path.join(getEnvolveHomePath(), directoryName)
 
-  const versionFileContent = await readFile({ file: versionFilePath })
+  console.log(serviceFolderPath)
 
-  if (versionFileContent === undefined) {
-    console.error('Version file content is undefined.')
-    return false
-  }
+  const symlinkPath = path.join(serviceFolderPath, '.env')
 
-  const versions = JSON.parse(versionFileContent)
+  const destinationPath = path.join(currentDirectory, '.env')
 
-  if (!Array.isArray(versions)) {
-    console.error('Versions is not an array.')
-    return false
-  }
-
-  const latestValues: Record<string, string> = {}
-
-  for (let i = 0; i < versions.length; i++) {
-    const changes = versions[i]?.changes
-
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (!changes || changes.length === 0) {
-      continue
-    }
-
-    for (const change of changes) {
-      latestValues[change.fieldName] = change.value
-    }
-  }
-
-  const newEnvContent = Object.entries(latestValues)
-    .map(([fieldName, value]) => `${fieldName}=${value}`)
-    .join('\n')
-
-  const newEnvFilePath = path.join(serviceFolderPath, '.env')
-
-  await writeFile({ file: newEnvFilePath, newFileContents: newEnvContent })
-
-  await createSymlink({ targetPath: newEnvFilePath })
+  await symlink(symlinkPath, destinationPath)
 
   return true
 }

@@ -3,7 +3,7 @@ import * as path from 'path'
 import { type IEnvVersion } from '../interfaces/env-version'
 
 import {
-  createFileIfNotExists,
+  createFile,
   readFile,
   writeFile
 } from './fileHandler'
@@ -15,9 +15,9 @@ import {
 export async function saveFieldVersion (targetPath: string, fieldName: string, value: string): Promise<void> {
   const versionFilePath = path.join(path.dirname(targetPath), '.version.json')
 
-  await createFileIfNotExists(versionFilePath)
+  await createFile(versionFilePath)
 
-  const versionFileContent = await readFile({ file: versionFilePath })
+  const versionFileContent = await readFile(versionFilePath)
 
   if (versionFileContent !== undefined) {
     let versions = JSON.parse(versionFileContent)
@@ -35,10 +35,10 @@ export async function saveFieldVersion (targetPath: string, fieldName: string, v
 
     versions.push(newVersion)
 
-    await writeFile({
-      file: versionFilePath,
-      newFileContents: JSON.stringify(versions, null, 2)
-    })
+    await writeFile(
+      versionFilePath,
+      JSON.stringify(versions, null, 2)
+    )
   } else {
     console.error('Version file content is undefined.')
   }
@@ -51,9 +51,9 @@ export async function saveFieldVersionsInSync (serviceFolderPath: string, envVal
   }
 
   const versionFilePath = path.join(serviceFolderPath, '.version.json')
-  await createFileIfNotExists(versionFilePath)
+  await createFile(versionFilePath)
 
-  const versionFileContent = await readFile({ file: versionFilePath })
+  const versionFileContent = await readFile(versionFilePath)
 
   let versions = versionFileContent !== undefined ? JSON.parse(versionFileContent) : []
 
@@ -72,23 +72,27 @@ export async function saveFieldVersionsInSync (serviceFolderPath: string, envVal
     versions.push(newVersion)
   }
 
-  await writeFile({
-    file: versionFilePath,
-    newFileContents: JSON.stringify(versions, null, 2)
-  })
+  await writeFile(
+    versionFilePath,
+    JSON.stringify(versions, null, 2)
+  )
 }
 
 export async function getEnvVersions (targetPath: string, fieldName: string): Promise<IEnvVersion[]> {
   const versionFilePath = path.join(path.dirname(targetPath), '.version.json')
-  const versionFileContent = await readFile({ file: versionFilePath })
+  const versionFileContent = await readFile(versionFilePath)
 
   if (versionFileContent !== undefined) {
     const versions: IEnvVersion[] = JSON.parse(versionFileContent)
 
-    return versions.filter(version => {
-      const fieldChange = version.changes.find(change => change.fieldName === fieldName)
-      return fieldChange !== undefined
-    })
+    const sortedVersions = versions
+      .filter(version => {
+        const fieldChange = version.changes.find(change => change.fieldName === fieldName)
+        return fieldChange !== undefined
+      })
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+    return sortedVersions
   } else {
     console.error('Version file content is undefined.')
     return []
