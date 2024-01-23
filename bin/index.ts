@@ -9,6 +9,9 @@ import CommandFactory from '../lib/command/commandFactory'
 import type Command from '../lib/command/command'
 import CommandInvoker from '../lib/command/commandInvoker'
 import { CommandTypes } from '../lib/const'
+import updateNotifier from 'update-notifier'
+
+updateNotifier({ pkg: packages }).notify()
 
 const program = new CommanderCommand()
 inquirer.registerPrompt('autocomplete', inquirerPrompt)
