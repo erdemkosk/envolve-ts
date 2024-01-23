@@ -336,3 +336,21 @@ export async function restoreEnvFile (): Promise<boolean> {
 
   return true
 }
+
+export async function generateEnvExampleFile (): Promise<boolean> {
+  const currentDirectory = process.cwd()
+
+  const currentPathDoesContainEnvFile = await doesFileExist(path.join(currentDirectory, '.env'))
+
+  if (!currentPathDoesContainEnvFile) {
+    return false
+  }
+
+  const envValues = await getValuesInEnv({ targetPath: path.join(currentDirectory, '.env') })
+
+  const result = envValues.data.map(innerArr => innerArr[0] + '=').join('\n')
+
+  await writeFile(path.join(currentDirectory, '.env-example'), result)
+
+  return true
+}

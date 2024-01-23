@@ -77,9 +77,18 @@ program
 
 program
   .command('restore-env')
-  .description(`${chalk.yellow('RESTORE')} the .env file based on the latest changes in the version.json file.`)
+  .description(`${chalk.yellow('RESTORE')} env file if u remove your env`)
   .action(async () => {
     const command: Command | null = factory.createCommand(CommandTypes.RESTORE_ENV)
+    command !== null && CommandInvoker.executeCommands(command)
+  })
+
+program
+  .command('generate')
+  .description(`${chalk.yellow('GENERATE')} the .env-example file based on ypur env file.`)
+  .alias('g')
+  .action(async () => {
+    const command: Command | null = factory.createCommand(CommandTypes.GENERATE_EXAMPLE_ENV)
     command !== null && CommandInvoker.executeCommands(command)
   })
 

@@ -5,5 +5,6 @@ export enum CommandTypes {
   COMPARE = 4,
   UPDATE = 5,
   REVERT = 6,
-  RESTORE_ENV = 7
+  RESTORE_ENV = 7,
+  GENERATE_EXAMPLE_ENV = 8,
 }

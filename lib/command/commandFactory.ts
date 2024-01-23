@@ -7,6 +7,7 @@ import RevertCommand from './commandTypes/revertCommand'
 import SyncCommand from './commandTypes/syncCommand'
 import UpdateAllCommand from './commandTypes/updateAllCommand'
 import UpdateCommand from './commandTypes/updateCommand'
+import GenerateCommand from './commandTypes/generateCommand'
 
 export default class CommandFactory {
   createCommand (commandType: number, ...params: any []): Command | null {
@@ -25,6 +26,8 @@ export default class CommandFactory {
         return new RevertCommand(params)
       case CommandTypes.RESTORE_ENV:
         return new RestoreCommand(params)
+      case CommandTypes.GENERATE_EXAMPLE_ENV:
+        return new GenerateCommand(params)
 
       default:
         return null
