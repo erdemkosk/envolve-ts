@@ -13,7 +13,7 @@ export default class RestoreCommand extends Command {
   }
 
   protected async onExecute (beforeExecuteReturnValue: any): Promise<void> {
-    const isSuccess = await generateEnvExampleFile()
+    const isSuccess = await generateEnvExampleFile(this.params[0][0])
 
     isSuccess
       ? consola.success('Env example was creating successfully. You are ready to go!')

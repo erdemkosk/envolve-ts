@@ -84,11 +84,11 @@ program
   })
 
 program
-  .command('generate')
+  .command('generate [filename]')
   .description(`${chalk.yellow('GENERATE')} the .env-example file based on ypur env file.`)
   .alias('g')
-  .action(async () => {
-    const command: Command | null = factory.createCommand(CommandTypes.GENERATE_EXAMPLE_ENV)
+  .action(async (filename) => {
+    const command: Command | null = factory.createCommand(CommandTypes.GENERATE_EXAMPLE_ENV, filename)
     command !== null && CommandInvoker.executeCommands(command)
   })
 
