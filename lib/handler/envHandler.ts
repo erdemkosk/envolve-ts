@@ -348,7 +348,7 @@ export async function generateEnvExampleFile (filename: string = '.env-example')
 
   const envValues = await getValuesInEnv({ targetPath: path.join(currentDirectory, '.env') })
 
-  const result = envValues.data.map(innerArr => innerArr[0] !== '' ? innerArr[0]  + '=' : '').join('\n')
+  const result = envValues.data.map(innerArr => innerArr[0] !== '' ? innerArr[0] + '=' : '').join('\n')
 
   await writeFile(path.join(currentDirectory, filename), result)
 
