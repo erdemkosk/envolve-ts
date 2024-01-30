@@ -1,6 +1,6 @@
 import { CommandTypes } from '../const'
 import type Command from './command'
-import CompareCommand from './commandTypes/compareCommand'
+import DiffCommand from './commandTypes/diffCommand'
 import LsCommand from './commandTypes/lsCommand'
 import RestoreCommand from './commandTypes/restoreCommand'
 import RevertCommand from './commandTypes/revertCommand'
@@ -16,8 +16,8 @@ export default class CommandFactory {
         return new LsCommand(params)
       case CommandTypes.SYNC:
         return new SyncCommand(params)
-      case CommandTypes.COMPARE:
-        return new CompareCommand(params)
+      case CommandTypes.DIFF:
+        return new DiffCommand(params)
       case CommandTypes.UPDATE:
         return new UpdateCommand(params)
       case CommandTypes.UPDATE_ALL:

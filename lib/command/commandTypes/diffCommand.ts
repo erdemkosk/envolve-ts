@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import inquirer from 'inquirer'
 import { consola } from 'consola'
 
-export default class CompareCommand extends Command {
+export default class DiffCommand extends Command {
   protected async beforeExecute (): Promise<any> {
     const files: string [] = await getEnvFilesRecursively(this.baseFolder)
 
@@ -47,11 +47,13 @@ export default class CompareCommand extends Command {
       destinationServiceName
     } = await compareEnvFiles(source, destination)
 
+    const terminalWidth = process.stdout.columns
+
     const table = new Table({
       head: ['VALUES', sourceServiceName, destinationServiceName],
-      wordWrap: true,
-      colWidths: [20, 30, 30],
-      wrapOnWordBoundary: false
+      colWidths: [Math.floor(terminalWidth / 3 - 5), Math.floor(terminalWidth / 3 - 5), Math.floor(terminalWidth / 3 - 5)],
+      wrapOnWordBoundary: false,
+      wordWrap: true
     })
 
     differentVariables.forEach(row => {

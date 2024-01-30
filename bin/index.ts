@@ -49,11 +49,11 @@ program
   })
 
 program
-  .command('compare')
+  .command('diff')
   .description(`${chalk.yellow('COMPARE')} command is a handy utility for differences in two different files with the same variable.`)
-  .alias('comp')
+  .alias('d')
   .action(async () => {
-    const command: Command | null = factory.createCommand(CommandTypes.COMPARE)
+    const command: Command | null = factory.createCommand(CommandTypes.DIFF)
     command !== null && CommandInvoker.executeCommands(command)
   })
 
